@@ -12,7 +12,10 @@ ph, ec, oc, av_p, av_k,	av_s, av_zn, av_b, av_fe, av_cu,av_mn
 )
 FROM '/Users/saurabh/github/soil-classifier/dataset/soil-profile-data.csv' DELIMITER ',' CSV HEADER;"
 
-cat /Users/saurabh/github/soil-classifier/dataset/soil-profile-data.csv | psql sa -d soildb -h 127.0.0.1 -c
+db_user = sa
+db_password = sa123
+
+cat /Users/saurabh/github/soil-classifier/dataset/soil-profile-data.csv | psql -U sa -d soildb -h 127.0.0.1 -c
 "COPY soil_profile(
 state, district, taluk, village, soil_type, authority, ph, ec, oc, av_p, av_k,  av_s, av_zn, av_b, av_fe, av_cu,av_mn)
 FROM stdin DELIMITER ',' CSV HEADER;"
