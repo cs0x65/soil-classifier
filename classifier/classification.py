@@ -4,6 +4,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 
+
 from dataset.preparation.ground_truths import GroundTruthBuilder
 
 
@@ -13,7 +14,6 @@ class SoilClassifier(object):
 
     def classify(self):
         data = pandas.read_csv(self.csv_file)
-        print(data.head(5))
         x = data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
                        GroundTruthBuilder.PH_FRUITS_NUTS_CLASS], axis=1)
         print(f'Data after dropping columns = \n{x.head(5)}')
@@ -30,7 +30,13 @@ class SoilClassifier(object):
         # y.fillna('NA', inplace=True)
         print(f'Labels {GroundTruthBuilder.PH_GENERIC_CLASS} = \n{y}')
 
-        self.classify_by(x, y)
+        # self.classify_by(x, y)
+
+        mulitlabel_y = data[['ph_veg_and_row_crops', 'ph_fruits_and_nuts']]
+        print(mulitlabel_y.head(5))
+        print(data.head(5))
+
+        self.classify_by(x, mulitlabel_y)
 
     def classify_by(self, features, labels):
         # print(f'>>> isnan =\n {numpy.isnan(features).all()}')
@@ -53,28 +59,84 @@ class SoilClassifier(object):
         # print(f'y_train==\n{y_train}')
         # print(f'y_test==\n{y_test}')
         #
-        svc = SVC()
-        knn = KNeighborsClassifier(n_neighbors=3)
+        # svc = SVC()
+        # knn = KNeighborsClassifier(n_neighbors=3)
+        #
+        # print('Training the model using SVC & KNeighbors classifier...')
+        # svc.fit(x_train, y_train)
+        # knn.fit(x_train, y_train)
+        #
+        # print('Training finished')
+        #
+        # print('==== Making predictions on the test data using the trained models..')
+        # print('>>>')
+        # svc_preds = svc.predict(x_test)
+        # knn_preds = knn.predict(x_test)
+        #
+        # print(f'SVC accuracy = \n{accuracy_score(svc_preds, y_test)}')
+        # print(f'KNN accuracy = \n{accuracy_score(knn_preds, y_test)}')
+        #
+        # print(f'SVC confusion matrix = \n{confusion_matrix(svc_preds, y_test)}')
+        # print(f'KNN confusion matrix = \n{confusion_matrix(knn_preds, y_test)}')
+        #
+        # print(f'SVC classification report = \n{classification_report(svc_preds, y_test)}')
+        # print(f'KNN classification report = \n{classification_report(knn_preds, y_test)}')
 
-        print('Training the model using SVC & KNeighbors classifier...')
-        svc.fit(x_train, y_train)
-        knn.fit(x_train, y_train)
+        print('Training the model using for multilable classification...')
+        from skmultilearn.problem_transform import BinaryRelevance
+        from sklearn.naive_bayes import GaussianNB
 
-        print('Training finished')
+        print('== BinaryRelevance ==')
 
-        print('Making predictions on the test data using the trained models..')
-        svc_preds = svc.predict(x_test)
-        knn_preds = knn.predict(x_test)
+        # initialize binary relevance multi-label classifier
+        # with a gaussian naive bayes base classifier
+        classifier = BinaryRelevance(GaussianNB())
 
-        print(f'SVC accuracy = \n{accuracy_score(svc_preds, y_test)}')
-        print(f'KNN accuracy = \n{accuracy_score(knn_preds, y_test)}')
+        # train
+        classifier.fit(x_train, y_train)
 
-        print(f'SVC confusion matrix = \n{confusion_matrix(svc_preds, y_test)}')
-        print(f'KNN confusion matrix = \n{confusion_matrix(knn_preds, y_test)}')
+        # predict
+        predictions = classifier.predict(x_test)
+        print(f'Multilabel BinaryRelevance accuracy = \n{accuracy_score(predictions, y_test)}')
+        print(f'Multilabel BinaryRelevance classification report = \n{classification_report(predictions, y_test)}')
+        # print(f'Multilabel confusion matrix = \n{confusion_matrix(predictions, y_test)}')
 
-        print(f'SVC classification report = \n{classification_report(svc_preds, y_test)}')
-        print(f'KNN classification report = \n{classification_report(knn_preds, y_test)}')
+        print('== ClassifierChain ==')
+        from skmultilearn.problem_transform import ClassifierChain
 
+        classifier = ClassifierChain(GaussianNB())
+
+        # train
+        classifier.fit(x_train, y_train)
+
+        # predict
+        predictions = classifier.predict(x_test)
+        print(f'Multilabel ClassifierChain accuracy = \n{accuracy_score(predictions, y_test)}')
+        print(f'Multilabel ClassifierChain classification report = \n{classification_report(predictions, y_test)}')
+
+        print('== LabelPowerset GNB ==')
+        from skmultilearn.problem_transform import LabelPowerset
+
+        classifier = LabelPowerset(GaussianNB())
+
+        # train
+        classifier.fit(x_train, y_train)
+
+        # predict
+        predictions = classifier.predict(x_test)
+        print(f'Multilabel LabelPowerset accuracy = \n{accuracy_score(predictions, y_test)}')
+        print(f'Multilabel LabelPowerset classification report = \n{classification_report(predictions, y_test)}')
+
+        print('== LabelPowerset SVM ==')
+        classifier = LabelPowerset(SVC())
+
+        # train
+        classifier.fit(x_train, y_train)
+
+        # predict
+        predictions = classifier.predict(x_test)
+        print(f'Multilabel LabelPowerset accuracy = \n{accuracy_score(predictions, y_test)}')
+        print(f'Multilabel LabelPowerset classification report = \n{classification_report(predictions, y_test)}')
 
 
 

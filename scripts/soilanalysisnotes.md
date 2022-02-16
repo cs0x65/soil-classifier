@@ -80,5 +80,25 @@ Specific values range:
     Table 2. Suitable ranges for Jowar
  
 
-  
+   
+Classifications implementation
+--
+Single label classification:
 
+pH:
+===
+Label header: ph_class 
+general pH for fertile soil: acidic < 6,alkaline > 7.3, 6 <= optimal <= 7.3
+>> Done
+
+Multi label classification:
+
+pH:
+===
+Label header: ph_veg_and_row_crops 
+optimal pH range for soil to be fertile for veg & row crops: 5.8 <= optimal <= 6.5
+>> TBD
+
+Label header: ph_fruits_and_nuts 
+optimal pH range for soil to be fertile for fruits & nuts: 5.5 <= optimal <= 5.8
+>> TBD
