@@ -56,10 +56,8 @@ class SoilClassifier(object):
 
         x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
 
-        svc = SVC()
-        knn = KNeighborsClassifier(n_neighbors=3)
-
         print('Training model: SVC')
+        svc = SVC()
         svc.fit(x_train, y_train)
         print('Training SVC finished')
 
@@ -70,6 +68,7 @@ class SoilClassifier(object):
         print(f'SVC classification report = \n{classification_report(svc_preds, y_test)}')
 
         print('Training model: k-NN')
+        knn = KNeighborsClassifier(n_neighbors=3)
         knn.fit(x_train, y_train)
         print('Training k-NN finished')
 
@@ -146,6 +145,4 @@ class SoilClassifier(object):
         print(f'Multilabel LabelPowerset SVM accuracy = \n{accuracy_score(predictions, y_test)}')
         print(f'Multilabel LabelPowerset SVM classification report = \n{classification_report(predictions, y_test)}')
 
-
-
-
+        print('--End of pH multilabel classification--')
