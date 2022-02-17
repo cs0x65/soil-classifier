@@ -4,6 +4,7 @@ from typing import Dict
 
 class GroundTruthBuilder(object):
     PH_GENERIC_CLASS = 'ph_class'
+    EC_GENERIC_CLASS = 'ec_class'
     PH_VEG_ROW_CROPS_CLASS = 'ph_veg_and_row_crops'
     PH_FRUITS_NUTS_CLASS = 'ph_fruits_and_nuts'
 
@@ -21,11 +22,13 @@ class GroundTruthBuilder(object):
             for row in reader:
                 print(f'Row no {reader.line_num}: {row}')
                 self.build_ph_labels(row)
+                self.build_ec_labels(row)
                 self.dataset_with_gd.append(row)
 
             self.headers.append(GroundTruthBuilder.PH_GENERIC_CLASS)
             self.headers.append(GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS)
             self.headers.append(GroundTruthBuilder.PH_FRUITS_NUTS_CLASS)
+            self.headers.append(GroundTruthBuilder.EC_GENERIC_CLASS)
 
             self._write_to_csv()
 
@@ -57,7 +60,18 @@ class GroundTruthBuilder(object):
         row[GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS] = 5.8 <= ph <= 6.5
         row[GroundTruthBuilder.PH_FRUITS_NUTS_CLASS] = 5.5 <= ph <= 5.8
 
+    @staticmethod
+    def build_ec_labels(row: Dict):
+        ec = float(row['ec'])
 
-
-
-
+        # Generic class based on ec value
+        ec_class = ''
+        if ec <= 0.5:
+            # normal
+            ec_class = 'Normal'
+        elif 0.5 < ec <= 1.5:
+            # marginally high: causes salt injury
+            ec_class = 'Marginally High'
+        else:
+            ec_class = 'Excessive'
+        row[GroundTruthBuilder.EC_GENERIC_CLASS] = ec_class

@@ -33,7 +33,9 @@ crops/plants suffer when ph < 4.8
 
 EC:
 ===
- 0.5 dS/m deci-siemens/meter > cause salt injury 
+0.5 dS/m deci-siemens/meter > cause salt injury 
+indicates salinity
+normal <= 0.5 <= marginally high <= 1.5 <= excessive(salt injury)
 
 Ranges of the nutrients:
 ===
@@ -91,14 +93,22 @@ Label header: ph_class
 general pH for fertile soil: acidic < 6,alkaline > 7.3, 6 <= optimal <= 7.3
 >> Done
 
+EC:
+===
+Label header: ec_class
+Acceptable EC for healthy soil:  normal <= 0.5 dS/m deci-siemens/meter < cause salt injury
+indicates salinity
+normal <= 0.5 <= marginally high <= 1.5 <= excessive(salt injury)
+
+
 Multi label classification:
 
 pH:
 ===
 Label header: ph_veg_and_row_crops 
 optimal pH range for soil to be fertile for veg & row crops: 5.8 <= optimal <= 6.5
->> TBD
+>> Done
 
 Label header: ph_fruits_and_nuts 
 optimal pH range for soil to be fertile for fruits & nuts: 5.5 <= optimal <= 5.8
->> TBD
+>> Done
