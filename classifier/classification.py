@@ -1,12 +1,15 @@
+import numpy
 import pandas
 from sklearn import model_selection
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, ConfusionMatrixDisplay
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
+from skmultilearn.adapt import MLkNN
 from skmultilearn.problem_transform import BinaryRelevance
 from sklearn.naive_bayes import GaussianNB
 from skmultilearn.problem_transform import ClassifierChain
 from skmultilearn.problem_transform import LabelPowerset
+import matplotlib.pyplot as plt
 
 from dataset.preparation.ground_truths import GroundTruthBuilder
 
@@ -78,6 +81,26 @@ class SoilClassifier(object):
         print(f'KNN confusion matrix = \n{confusion_matrix(knn_preds, y_test)}')
         print(f'KNN classification report = \n{classification_report(knn_preds, y_test)}')
 
+        cm = confusion_matrix(knn_preds, y_test)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=knn.classes_)
+        # disp.plot()
+        # plt.show()
+        #
+        # plt.scatter(x_train, y_train)
+        # plt.show()
+
+        distances, indexes = knn.kneighbors(x_train)
+        plt.plot(distances.mean(axis=1))
+        # plt.show()
+
+        outlier_indexes = numpy.where(distances.mean(axis=1) > 0)
+        print(f'outlier_indexes = {outlier_indexes}')
+        outlier_values = self.data.iloc[outlier_indexes]
+        print(f'outlier_values = {outlier_values}')
+        plt.scatter(x_train, y_train, color='b')
+        plt.scatter(outlier_values['ph'], outlier_values['ph_class'], color='r')
+        plt.show()
+
         print('--End of pH binary classification--')
 
         # print(f'>>> isnan =\n {numpy.isnan(features).all()}')
@@ -121,7 +144,6 @@ class SoilClassifier(object):
         print('Training model: ClassifierChain')
         classifier = ClassifierChain(GaussianNB())
         diff = set(y_test) - set(y_train)
-        print(f'!!! Diff = {diff}')
         classifier.fit(x_train, y_train)
         print('Predictions: ClassifierChain')
         predictions = classifier.predict(x_test)
@@ -144,5 +166,15 @@ class SoilClassifier(object):
         predictions = classifier.predict(x_test)
         print(f'Multilabel LabelPowerset SVM accuracy = \n{accuracy_score(predictions, y_test)}')
         print(f'Multilabel LabelPowerset SVM classification report = \n{classification_report(predictions, y_test)}')
+
+        print('Training model: MLkNN')
+        classifier = MLkNN(k=21)
+        classifier.fit(x_train.values, y_train.values)
+
+        print('Predictions: MLkNN')
+        predictions = classifier.predict(x_test)
+        print(f'Multilabel MLkNN accuracy = \n{accuracy_score(predictions, y_test)}')
+        print(f'Multilabel MLkNN classification report = \n{classification_report(predictions, y_test)}')
+        # print(f'Multilabel MLkNN confusion matrix = \n{confusion_matrix(predictions, y_test)}')
 
         print('--End of pH multilabel classification--')
