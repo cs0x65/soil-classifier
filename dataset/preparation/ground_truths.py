@@ -8,6 +8,13 @@ class GroundTruthBuilder(object):
     PH_VEG_ROW_CROPS_CLASS = 'ph_veg_and_row_crops'
     PH_FRUITS_NUTS_CLASS = 'ph_fruits_and_nuts'
 
+    # May need to specify what are the tolerable avg distances from the neighbors for them not to be outliers when using
+    # kNN algorithm.
+    FEATURES_TO_LABELS_DICT = {
+        'ph': [PH_GENERIC_CLASS, PH_VEG_ROW_CROPS_CLASS, PH_FRUITS_NUTS_CLASS],
+        'ec': [EC_GENERIC_CLASS]
+    }
+
     def __init__(self, in_csv_file: str, out_csv_file: str = None):
         self.in_csv_file = in_csv_file.strip()
         self.out_csv_file = out_csv_file.strip() if out_csv_file else f'{self.in_csv_file.split(".csv")[0]}_with_gt.csv'

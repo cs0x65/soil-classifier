@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy
 import pandas
 from sklearn import model_selection
@@ -22,106 +24,25 @@ class SoilClassifier(object):
 
     def classify(self):
         self.data = pandas.read_csv(self.csv_file)
-        self.ph_binary_classify()
-        self.ph_multilabel_classify()
+        self.single_feature_multiple_classes(features=['ph', 'ec'])
+        self._single_feature_multiple_labels()
 
-        # x = data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
-        #                GroundTruthBuilder.PH_FRUITS_NUTS_CLASS], axis=1)
-        # print(f'Data after dropping columns = \n{x.head(5)}')
-        # # x = x.loc[:, 'ph']
-        # x = x.iloc[:, 6:7]
-        # # x.reset_index()
-        # # x.fillna(x.mean(), inplace=True)
-        # # print(f'null rows = {x.isnull().any(axis=0)}')
-        #
-        # print(f'Data after selecting required features = \n{x.head(5)}')
-        # print(f'type of x = {type(x)}')
-        # # y = numpy.ravel(data['soil_type'])
-        # y = data[GroundTruthBuilder.PH_GENERIC_CLASS]
-        # # y.fillna('NA', inplace=True)
-        # print(f'Labels {GroundTruthBuilder.PH_GENERIC_CLASS} = \n{y}')
-        #
-        # # self.classify_by(x, y)
-        #
-        # mulitlabel_y = data[['ph_veg_and_row_crops', 'ph_fruits_and_nuts']]
-        # print(mulitlabel_y.head(5))
-        # print(data.head(5))
-        #
-        # self.classify_by(x, mulitlabel_y)
+    def single_feature_multiple_classes(self, features: List):
+        """
+        This method acts on a single feature and applies classification algorithms such that each record in the
+        test dataset on prediction belongs to one & only one class from the classes supplied in the training data.
+        :param features: list of features for each of which the classification models are trained and predicted.
+        :return:
+        """
+        print(f'--Start of single feature binary labels classification for: {features}--')
 
-    def ph_binary_classify(self):
-        print('--Start of pH binary classification--')
+        for feature in features:
+            self._knn_classify(features=[feature], multilabel=False, plot=False)
+            self._svn_classify(features=[feature], multilabel=False)
 
-        x = self.data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
-                            GroundTruthBuilder.PH_FRUITS_NUTS_CLASS], axis=1)
-        x = x.iloc[:, 6:7]
-        y = self.data[GroundTruthBuilder.PH_GENERIC_CLASS]
+        print(f'--End of single feature binary labels classification for: {features}--')
 
-        x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
-
-        print('Training model: SVC')
-        svc = SVC()
-        svc.fit(x_train, y_train)
-        print('Training SVC finished')
-
-        print('Predictions: SVC')
-        svc_preds = svc.predict(x_test)
-        print(f'SVC accuracy = \n{accuracy_score(svc_preds, y_test)}')
-        print(f'SVC confusion matrix = \n{confusion_matrix(svc_preds, y_test)}')
-        print(f'SVC classification report = \n{classification_report(svc_preds, y_test)}')
-
-        print('Training model: k-NN')
-        knn = KNeighborsClassifier(n_neighbors=3)
-        knn.fit(x_train, y_train)
-        print('Training k-NN finished')
-
-        print('Predictions: k-NN')
-        knn_preds = knn.predict(x_test)
-        print(f'KNN accuracy = \n{accuracy_score(knn_preds, y_test)}')
-        print(f'KNN confusion matrix = \n{confusion_matrix(knn_preds, y_test)}')
-        print(f'KNN classification report = \n{classification_report(knn_preds, y_test)}')
-
-        cm = confusion_matrix(knn_preds, y_test)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=knn.classes_)
-        # disp.plot()
-        # plt.show()
-        #
-        # plt.scatter(x_train, y_train)
-        # plt.show()
-
-        distances, indexes = knn.kneighbors(x_train)
-        plt.plot(distances.mean(axis=1))
-        # plt.show()
-
-        outlier_indexes = numpy.where(distances.mean(axis=1) > 0)
-        print(f'outlier_indexes = {outlier_indexes}')
-        outlier_values = self.data.iloc[outlier_indexes]
-        print(f'outlier_values = {outlier_values}')
-        plt.scatter(x_train, y_train, color='b')
-        plt.scatter(outlier_values['ph'], outlier_values['ph_class'], color='r')
-        plt.show()
-
-        print('--End of pH binary classification--')
-
-        # print(f'>>> isnan =\n {numpy.isnan(features).all()}')
-        # nan_array = numpy.where(numpy.isnan(features))
-        # print(f'>>> nan_array = {nan_array}')
-
-        # print(f'>>> isfinite =\n {numpy.isfinite(features).all()}')
-        # nf_array = numpy.where(~numpy.isfinite(features))
-        # print(f'n>>> f_array = {nf_array}')
-        # for e in nf_array:
-        #     if False in e:
-        #         print(f'found infinite: {e}')
-        #         break
-
-        # print(f'x_train==\n{x_train}')
-        # print(f'x_test==\n{x_test}')
-        # print(f'y_train==\n{y_train}')
-        # print(f'y_test==\n{y_test}')
-        #
-
-    def ph_multilabel_classify(self):
+    def _single_feature_multiple_labels(self):
         print('--Start of pH multilabel classification--')
 
         x = self.data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
@@ -178,3 +99,70 @@ class SoilClassifier(object):
         # print(f'Multilabel MLkNN confusion matrix = \n{confusion_matrix(predictions, y_test)}')
 
         print('--End of pH multilabel classification--')
+
+    def _svn_classify(self, features: List, multilabel=False, plot=False):
+        print(f'--Start of SVN classification for: {features} binary: {multilabel}--')
+        x = self.data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
+                            GroundTruthBuilder.PH_FRUITS_NUTS_CLASS, GroundTruthBuilder.EC_GENERIC_CLASS], axis=1)
+        x = x[[features[0]]]
+        y = self.data[GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][0]]
+        x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
+
+        print('Training model: SVC')
+        svc = SVC()
+        svc.fit(x_train, y_train)
+        print('Training SVC finished')
+
+        print('Predictions: SVC')
+        svc_preds = svc.predict(x_test)
+        print(f'SVC accuracy = \n{accuracy_score(svc_preds, y_test)}')
+        print(f'SVC confusion matrix = \n{confusion_matrix(svc_preds, y_test)}')
+        print(f'SVC classification report = \n{classification_report(svc_preds, y_test)}')
+
+        print(f'--End of SVN classification for: {features} binary: {multilabel}--')
+
+    def _knn_classify(self, features: List, multilabel=False, plot=False):
+        print(f'--Start of k-NN classification for: {features} binary: {multilabel}--')
+        x = self.data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
+                            GroundTruthBuilder.PH_FRUITS_NUTS_CLASS, GroundTruthBuilder.EC_GENERIC_CLASS], axis=1)
+        x = x[features]
+        y = self.data[GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][0]]
+        x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
+
+        print('Training model: k-NN')
+        knn = KNeighborsClassifier(n_neighbors=3)
+        knn.fit(x_train, y_train)
+        print('Training k-NN finished')
+
+        print('Predictions: k-NN')
+        knn_preds = knn.predict(x_test)
+        print(f'KNN accuracy = \n{accuracy_score(knn_preds, y_test)}')
+        print(f'KNN confusion matrix = \n{confusion_matrix(knn_preds, y_test)}')
+        print(f'KNN classification report = \n{classification_report(knn_preds, y_test)}')
+
+        if plot:
+            cm = confusion_matrix(knn_preds, y_test)
+            disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=knn.classes_)
+            disp.plot()
+            plt.show()
+
+            plt.scatter(x_train, y_train)
+            plt.show()
+
+            distances, indexes = knn.kneighbors(x_train)
+            plt.plot(distances.mean(axis=1))
+            plt.show()
+
+            outlier_indexes = numpy.where(distances.mean(axis=1) > 0)
+            # print(f'outlier_indexes = {outlier_indexes}')
+            outlier_values = self.data.iloc[outlier_indexes]
+            # print(f'outlier_values = {outlier_values}')
+            plt.scatter(x_train, y_train, color='b')
+            plt.scatter(
+                outlier_values[features],
+                outlier_values[GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][0]],
+                color='r'
+            )
+            plt.show()
+
+        print(f'--end of k-NN classification for: {features} binary: {multilabel}--')

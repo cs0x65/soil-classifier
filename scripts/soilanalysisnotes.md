@@ -99,6 +99,7 @@ Label header: ec_class
 Acceptable EC for healthy soil:  normal <= 0.5 dS/m deci-siemens/meter < cause salt injury
 indicates salinity
 normal <= 0.5 <= marginally high <= 1.5 <= excessive(salt injury)
+>> TBD
 
 
 Multi label classification:
