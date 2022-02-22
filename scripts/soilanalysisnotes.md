@@ -113,3 +113,52 @@ optimal pH range for soil to be fertile for veg & row crops: 5.8 <= optimal <= 6
 Label header: ph_fruits_and_nuts 
 optimal pH range for soil to be fertile for fruits & nuts: 5.5 <= optimal <= 5.8
 >> Done
+
+Macro nutrients based classification:
+===
+av_p (kg/ha): 
+very low < 35.8672, low 35.8672 - 56.0426, medium 58.2843 - 78.4596, optimum 80.7013 - 112.085, above optimum 112.085 > 
+av_k (kg/ha): 
+very low < 136.744, low 136.744 - 201.753, medium 203.995 - 291.421, optimum 293.663 - 392.298, above optimum 392.298 >
+av_s (ppm): 
+optimum <=10
+------------------------------------------------------------------------------------------------------------------------
+binary classification: optimal_macro_nutrients (True/False)
+>>> TBD
+
+Micro nutrients based classification:
+===
+av_zn (ppm):  very low < 1.6, low 1.6 - 3.0, medium 3.1 - 4.0, optimum 4.0 - 8.0, above optimum 8.0 >
+av_b (ppm): [check availability] 
+av_fe (ppm): [check availability]
+av_cu (ppm): optimal < 1.0
+av_mn (ppm): optimal < 40
+------------------------------------------------------------------------------------------------------------------------
+binary classification: optimal_micro_nutrients (True/False)
+>>> TBD
+
+
+Multilabel classification for macro & micronutrients:
+===
+macro nutrients: optimal_macro_nutrients_row_crops_forages, optimal_macro_nutrients_vegetables, 
+optimal_macro_nutrients_row_crops_fruits 
+
+micro nutrients: [check availability]
+>> TBD
+
+
+Ultimate classification
+===
+Multiple classes/labels in earlier classification becomes features and binary classification:
+--
+- Take all the labels generated from single feature or multi-feature classification
+- For next level of classification, all these labels become features
+- Becomes binary classification with class: generic_fertile (True/False)
+>> TBD
+
+Multiple crop specific lebels/classes in earlier classification becomes features and do multilabel classification:
+--
+- Take all the labels generated from single feature or multi-feature to multilabel classification
+- For next level of classification, all these labels become features
+- Multilabel classification with labels: fertile_row_crops_forages_veg, fertile_fruit_nuts
+>> TBD
