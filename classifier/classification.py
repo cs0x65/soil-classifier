@@ -13,6 +13,7 @@ from skmultilearn.problem_transform import ClassifierChain
 from skmultilearn.problem_transform import LabelPowerset
 import matplotlib.pyplot as plt
 
+from classifier import utils
 from dataset.preparation.ground_truths import GroundTruthBuilder
 
 
@@ -42,17 +43,30 @@ class MulticlassClassifier(object):
         print(f'--Start of single feature multi-class classification for: {features}--')
 
         for feature in features:
-            self._knn_classify(features=[feature], multilabel=False, plot=True)
+            self._knn_classify(features=[feature], multilabel=False)
             self._svn_classify(features=[feature], multilabel=False)
+
+        print(f'--End of single feature binary multi-class classification for: {features}--')
+
+    def multi_feature_multiclass_classify(self, features: List):
+        """
+        This method acts on multiple features and applies classification algorithms such that each record in the
+        test dataset on prediction belongs to one & only one class from the classes supplied in the training data.
+        :param features: list of features together for which the classification models are trained and predicted.
+        :return:
+        """
+        print(f'--Start of multiple features multi-class classification for: {features}--')
+
+        self._knn_classify(features=features, multilabel=False, plot=True)
+        self._svn_classify(features=features, multilabel=False)
 
         print(f'--End of single feature binary multi-class classification for: {features}--')
 
     def _svn_classify(self, features: List, multilabel=False, plot=False):
         print(f'--Start of SVN classification for: {features} multilabel: {multilabel}--')
-        x = self.data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
-                            GroundTruthBuilder.PH_FRUITS_NUTS_CLASS, GroundTruthBuilder.EC_GENERIC_CLASS], axis=1)
+        x = utils.get_data_without_labels(self.data)
         x = x[features]
-        y = self.data[GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][0]]
+        y = utils.get_applicable_labels(data=self.data, features=features, multilabel=multilabel)
         x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
 
         print('Training model: SVC')
@@ -70,10 +84,9 @@ class MulticlassClassifier(object):
 
     def _knn_classify(self, features: List, multilabel=False, plot=False):
         print(f'--Start of k-NN classification for: {features} multilabel: {multilabel}--')
-        x = self.data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
-                            GroundTruthBuilder.PH_FRUITS_NUTS_CLASS, GroundTruthBuilder.EC_GENERIC_CLASS], axis=1)
+        x = utils.get_data_without_labels(self.data)
         x = x[features]
-        y = self.data[GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][0]]
+        y = utils.get_applicable_labels(data=self.data, features=features, multilabel=multilabel)
         x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
 
         print('Training model: k-NN')
