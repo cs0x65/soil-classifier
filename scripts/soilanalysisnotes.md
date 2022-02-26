@@ -128,11 +128,22 @@ optimal pH range for soil to be fertile for fruits & nuts: 5.5 <= optimal <= 5.8
 
 Macro nutrients based classification:
 ===
-av_p (kg/ha): 
-very low < 35.8672, low 35.8672 - 56.0426, medium 58.2843 - 78.4596, optimum 80.7013 - 112.085, above optimum 112.085 > 
-av_k (kg/ha): 
+oc (%) helps indirectly decide the measurement of N (N2O)
+Paper: Classification of agriculture soil parameters in India
+low < 0.5 medium 0.5 - 0.75 high > 0.75
+
+av_p (kg/ha) P2O:
+Paper: FSA-2118
+very low < 35.8672, low 35.8672 - 56.0426, medium 58.2843 - 78.4596, optimum 80.7013 - 112.085, above optimum 112.085 >
+Paper: Classification of agriculture soil parameters in India 
+low < 10 medium 10 - 24.6 high > 24.6
+
+av_k (kg/ha) K2O:
+Paper: FSA-2118
 very low < 136.744, low 136.744 - 201.753, medium 203.995 - 291.421, optimum 293.663 - 392.298, above optimum 392.298 >
+
 av_s (ppm): 
+Paper: FSA-2118
 optimum <=10
 ------------------------------------------------------------------------------------------------------------------------
 binary classification: optimal_macro_nutrients (True/False)
@@ -140,11 +151,26 @@ binary classification: optimal_macro_nutrients (True/False)
 
 Micro nutrients based classification:
 ===
-av_zn (ppm):  very low < 1.6, low 1.6 - 3.0, medium 3.1 - 4.0, optimum 4.0 - 8.0, above optimum 8.0 >
+av_zn (ppm): 
+Paper: FSA-2118
+very low < 1.6, low 1.6 - 3.0, medium 3.1 - 4.0, optimum 4.0 - 8.0, above optimum 8.0 > 
+
 av_b (ppm): [check availability] 
-av_fe (ppm): [check availability]
-av_cu (ppm): low < 1.0 i.e. optimal >= 1.0
-av_mn (ppm): low < 40 i.e optimal >= 40
+
+av_fe (ppm): 
+Paper: Classification of agriculture soil parameters in India
+low < 2.5 medium 2.5 - 4.5 high > 4.5
+
+av_cu (ppm):
+Paper: FSA-2118
+low < 1.0 i.e. optimal >= 1.0
+
+av_mn (ppm):
+Paper: FSA-2118
+low < 40 i.e optimal >= 40
+Paper: Classification of agriculture soil parameters in India
+low < 1 medium 1-2 high > 2
+
 ------------------------------------------------------------------------------------------------------------------------
 binary classification: optimal_micro_nutrients (True/False)
 >>> TBD

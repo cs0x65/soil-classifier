@@ -25,7 +25,7 @@ class GroundTruthBuilder(object):
     def __init__(self, in_csv_file: str, out_csv_file: str = None):
         self.in_csv_file = in_csv_file.strip()
         self.out_csv_file = out_csv_file.strip() if out_csv_file else f'{self.in_csv_file.split(".csv")[0]}_with_gt.csv'
-        self.cleansed_out_file = f'{self.in_csv_file.split(".csv")[0]}_with_cleansed_data.csv'
+        self.cleansed_out_file = f'{self.in_csv_file.split(".csv")[0]}_cleansed.csv'
         self.headers = None
         self.dataset_with_gd = list()
 
@@ -47,10 +47,13 @@ class GroundTruthBuilder(object):
         print('--Start:Cleansing macro-nutrients--')
         av_p = data['av_p']
         av_p.fillna(av_p.mean(), inplace=True)
+        print(f'## max/min av_p = {av_p.max()} {av_p.min()}')
         av_k = data['av_k']
         av_k.fillna(av_k.mean(), inplace=True)
+        print(f'## max/min av_k = {av_k.max()} {av_k.min()}')
         av_s = data['av_s']
         av_s.fillna(av_s.mean(), inplace=True)
+        print(f'## max/min av_s = {av_s.max()} {av_s.min()}')
         print('--End:Cleansing macro-nutrients--')
 
     @staticmethod
@@ -58,10 +61,13 @@ class GroundTruthBuilder(object):
         print('--Start:Cleansing micro-nutrients--')
         av_cu = data['av_cu']
         av_cu.fillna(av_cu.mean(), inplace=True)
+        print(f'## max/min av_cu = {av_cu.max()} {av_cu.min()}')
         av_mn = data['av_mn']
         av_mn.fillna(av_mn.mean(), inplace=True)
+        print(f'## max/min av_mn = {av_mn.max()} {av_mn.min()}')
         av_zn = data['av_zn']
         av_zn.fillna(av_zn.mean(), inplace=True)
+        print(f'## max/min av_zn = {av_zn.max()} {av_zn.min()}')
         print('--End:Cleansing micro-nutrients--')
 
     def build_all(self):
@@ -74,7 +80,6 @@ class GroundTruthBuilder(object):
             print(f'## fieldnames before: {self.headers}')
             for row in reader:
                 # print(f'Row no {reader.line_num}: {row}')
-                print(f'Row no {reader.line_num}')
                 self.build_ph_labels(row)
                 self.build_ec_labels(row)
                 self.build_optimal_macro_nutrients_binary_label(row)
