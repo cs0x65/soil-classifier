@@ -5,9 +5,22 @@ queries that have ph:
  - < optimal range i.e. acidic
  ==
 
+Symbols & element names
+===
+---- macro nutrients ---
+p phosphorous
+k potassium
+s sulfur (in the form of sulfate sulfur in the soil)
+zn zinc
+
+---- micro nutrients ---
+b boron 
+fe iron
+cu copper
+mn manganese
+
  clustering based on values/ranges of macro and micro nutrients
  ==
-
  soils having optimal, less and higher that normal macro nutrients
  queries for 3 ranges of macro nutrients values: optimum, low, high
 
@@ -39,7 +52,6 @@ normal <= 0.5 <= marginally high <= 1.5 <= excessive(salt injury)
 
 Ranges of the nutrients:
 ===
-
 
 Conversions based on FSA2118 paper:
 
@@ -131,8 +143,8 @@ Micro nutrients based classification:
 av_zn (ppm):  very low < 1.6, low 1.6 - 3.0, medium 3.1 - 4.0, optimum 4.0 - 8.0, above optimum 8.0 >
 av_b (ppm): [check availability] 
 av_fe (ppm): [check availability]
-av_cu (ppm): optimal < 1.0
-av_mn (ppm): optimal < 40
+av_cu (ppm): low < 1.0 i.e. optimal >= 1.0
+av_mn (ppm): low < 40 i.e optimal >= 40
 ------------------------------------------------------------------------------------------------------------------------
 binary classification: optimal_micro_nutrients (True/False)
 >>> TBD

@@ -1,5 +1,8 @@
 import csv
 from typing import Dict
+import os
+
+import pandas
 
 
 class GroundTruthBuilder(object):
@@ -22,16 +25,56 @@ class GroundTruthBuilder(object):
     def __init__(self, in_csv_file: str, out_csv_file: str = None):
         self.in_csv_file = in_csv_file.strip()
         self.out_csv_file = out_csv_file.strip() if out_csv_file else f'{self.in_csv_file.split(".csv")[0]}_with_gt.csv'
+        self.cleansed_out_file = f'{self.in_csv_file.split(".csv")[0]}_with_cleansed_data.csv'
         self.headers = None
         self.dataset_with_gd = list()
 
+    def _cleanse_data(self):
+        """
+        TODO: currently on those columns are being cleansed which are actually being used in classification.
+        If required, in the future cleanse all the columns.
+        """
+        print('--Start:Cleansing the data and replacing missing values--')
+        data = pandas.read_csv(self.in_csv_file, na_values=['', ' ', None], skipinitialspace=True)
+        # print(f'columns = {data.columns}')
+        self._cleanse_macro_nutrients(data)
+        self._cleanse_micro_nutrients(data)
+        data.to_csv(self.cleansed_out_file, index=False)
+        print('--End:Cleansing the data and replacing missing values--')
+
+    @staticmethod
+    def _cleanse_macro_nutrients(data):
+        print('--Start:Cleansing macro-nutrients--')
+        av_p = data['av_p']
+        av_p.fillna(av_p.mean(), inplace=True)
+        av_k = data['av_k']
+        av_k.fillna(av_k.mean(), inplace=True)
+        av_s = data['av_s']
+        av_s.fillna(av_s.mean(), inplace=True)
+        print('--End:Cleansing macro-nutrients--')
+
+    @staticmethod
+    def _cleanse_micro_nutrients(data):
+        print('--Start:Cleansing micro-nutrients--')
+        av_cu = data['av_cu']
+        av_cu.fillna(av_cu.mean(), inplace=True)
+        av_mn = data['av_mn']
+        av_mn.fillna(av_mn.mean(), inplace=True)
+        av_zn = data['av_zn']
+        av_zn.fillna(av_zn.mean(), inplace=True)
+        print('--End:Cleansing micro-nutrients--')
+
     def build_all(self):
-        with open(self.in_csv_file) as csv_file:
+        self._cleanse_data()
+
+        # build the ground truths from the cleansed dataset
+        with open(self.cleansed_out_file) as csv_file:
             reader = csv.DictReader(csv_file)
-            print(f'fieldnames before: {reader.fieldnames}')
             self.headers = reader.fieldnames
+            print(f'## fieldnames before: {self.headers}')
             for row in reader:
-                print(f'Row no {reader.line_num}: {row}')
+                # print(f'Row no {reader.line_num}: {row}')
+                print(f'Row no {reader.line_num}')
                 self.build_ph_labels(row)
                 self.build_ec_labels(row)
                 self.build_optimal_macro_nutrients_binary_label(row)
@@ -46,6 +89,9 @@ class GroundTruthBuilder(object):
             self.headers.append(GroundTruthBuilder.OPTIMAL_MICRO_NUTRIENTS_CLASS)
 
             self._write_to_csv()
+            if os.path.exists(self.cleansed_out_file):
+                print(f'--Deleting the temp file: {self.cleansed_out_file}--')
+                os.remove(self.cleansed_out_file)
 
     def _write_to_csv(self):
         with open(self.out_csv_file, mode='w') as csv_file:
@@ -95,35 +141,24 @@ class GroundTruthBuilder(object):
     def build_optimal_macro_nutrients_binary_label(row: Dict):
         av_p = float(row['av_p'])
         av_k = float(row['av_k'])
-        # TODO: need this cleanup in the build_all itself using pandas missing values construct - that means the csv
-        # file shall be 1st updated with the missing values, and do data cleanup of required and then find the ground
-        # truths
-        try:
-            av_s = float(row['av_s'])
-        except ValueError:
-            av_s = row['av_s'] = 0
+        av_s = float(row['av_s'])
 
         # pattern followed: lowest of medium range to highest of optimal range
         # medium 58.2843 - 78.4596, optimum 80.7013 - 112.085
         av_p_optimal = 58.2843 <= av_p <= 112.085
         # medium 203.995 - 291.421, optimum 293.663 - 392.298
         av_k_optimal = 203.995 <= av_k <= 392.298
+
         row[GroundTruthBuilder.OPTIMAL_MACRO_NUTRIENTS_CLASS] = av_p_optimal and av_k_optimal and av_s <= 10
 
     @staticmethod
     def build_optimal_micro_nutrients_binary_label(row: Dict):
         av_zn = float(row['av_zn'])
-        try:
-            av_cu = float(row['av_cu'])
-        except ValueError:
-            av_cu = row['av_cu'] = 0
-
-        try:
-            av_mn = float(row['av_mn'])
-        except ValueError:
-            av_mn = row['av_mn'] = 0
+        av_cu = float(row['av_cu'])
+        av_mn = float(row['av_mn'])
 
         # pattern followed: lowest of medium range to highest of optimal range
         # medium 3.1 - 4.0, optimum 4.0 - 8.0
         av_zn_optimal = 3.1 <= av_zn <= 8.0
+
         row[GroundTruthBuilder.OPTIMAL_MICRO_NUTRIENTS_CLASS] = av_zn_optimal and av_cu >= 1.0 and av_mn >= 40
