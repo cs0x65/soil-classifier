@@ -29,6 +29,10 @@ class SoilClassifier(object):
                                                                                      'av_mn'])
         MultilabelClassifier(self.data).single_feature_multilabel_classify(features=['ph'])
 
+        MulticlassClassifier(self.data).multi_feature_multiclass_classify(['oc', 'av_p'])
+        MulticlassClassifier(self.data).multi_feature_multiclass_classify(['av_fe', 'av_mn'])
+        MulticlassClassifier(self.data).multi_feature_multiclass_classify(['ph', 'ec', 'oc', 'av_p', 'av_fe', 'av_mn'])
+
 
 class MulticlassClassifier(object):
     def __init__(self, data):
@@ -44,8 +48,8 @@ class MulticlassClassifier(object):
         print(f'--Start of single feature multi-class classification for: {features}--')
 
         for feature in features:
-            self._knn_classify(features=[feature], multilabel=False)
-            self._svn_classify(features=[feature], multilabel=False)
+            self._knn_classify(features=[feature], multilabel=False, plot=True)
+            self._svn_classify(features=[feature], multilabel=False, plot=True)
 
         print(f'--End of single feature binary multi-class classification for: {features}--')
 
@@ -104,27 +108,32 @@ class MulticlassClassifier(object):
         if plot:
             cm = confusion_matrix(knn_preds, y_test)
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=knn.classes_)
+            title = str(features) + ':'
             disp.plot()
+            plt.title(title + ' confusion matrix')
             plt.show()
 
-            plt.scatter(x_train, y_train)
-            plt.show()
+            # plt.scatter(x_train, y_train)
+            # plt.title(title + ' scatter graph')
+            # plt.show()
 
             distances, indexes = knn.kneighbors(x_train)
             plt.plot(distances.mean(axis=1))
+            plt.title(title + ' avg. neighbor distance')
             plt.show()
 
             outlier_indexes = numpy.where(distances.mean(axis=1) > 0)
             # print(f'outlier_indexes = {outlier_indexes}')
             outlier_values = self.data.iloc[outlier_indexes]
             # print(f'outlier_values = {outlier_values}')
-            plt.scatter(x_train, y_train, color='b')
-            plt.scatter(
-                outlier_values[features],
-                outlier_values[GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][0]],
-                color='r'
-            )
-            plt.show()
+            # plt.scatter(x_train, y_train, color='b')
+            # plt.scatter(
+            #     outlier_values[features],
+            #     outlier_values[GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][0]],
+            #     color='r'
+            # )
+            # plt.title(title + ' outliers')
+            # plt.show()
 
         print(f'--end of k-NN classification for: {features} multilabel: {multilabel}--')
 

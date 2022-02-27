@@ -21,6 +21,8 @@ class GroundTruthBuilder(object):
     OPTIMAL_MACRO_NUTRIENTS_CLASS = 'optimal_macro_nutrients_class'
     OPTIMAL_MICRO_NUTRIENTS_CLASS = 'optimal_micro_nutrients_class'
 
+    FERTILITY_CLASS = 'fertility_class'
+
     # May need to specify what are the tolerable avg distances from the neighbors for them not to be outliers when using
     # kNN algorithm.
     FEATURES_TO_LABELS_DICT = {
@@ -30,8 +32,9 @@ class GroundTruthBuilder(object):
         'av_p': [P_GENERIC_CLASS],
         'av_fe': [FE_GENERIC_CLASS],
         'av_mn': [MN_GENERIC_CLASS],
-        'av_p,av_k,av_s': [OPTIMAL_MACRO_NUTRIENTS_CLASS],
-        'av_zn,av_cu,av_mn': [OPTIMAL_MICRO_NUTRIENTS_CLASS]
+        'oc,av_p': [OPTIMAL_MACRO_NUTRIENTS_CLASS],
+        'av_fe,av_mn': [OPTIMAL_MICRO_NUTRIENTS_CLASS],
+        'ph,ec,oc,av_p,av_fe,av_mn': [FERTILITY_CLASS]
     }
 
     def __init__(self, in_csv_file: str, out_csv_file: str = None):
@@ -103,6 +106,7 @@ class GroundTruthBuilder(object):
                 self.build_mn_labels(row)
                 self.build_optimal_macro_nutrients_binary_label(row)
                 self.build_optimal_micro_nutrients_binary_label(row)
+                self.build_generic_fertility_label(row)
                 self.dataset_with_gd.append(row)
 
             self.headers.append(GroundTruthBuilder.PH_GENERIC_CLASS)
@@ -115,6 +119,7 @@ class GroundTruthBuilder(object):
             self.headers.append(GroundTruthBuilder.MN_GENERIC_CLASS)
             self.headers.append(GroundTruthBuilder.OPTIMAL_MACRO_NUTRIENTS_CLASS)
             self.headers.append(GroundTruthBuilder.OPTIMAL_MICRO_NUTRIENTS_CLASS)
+            self.headers.append(GroundTruthBuilder.FERTILITY_CLASS)
 
             self._write_to_csv()
             if os.path.exists(self.cleansed_out_file):
@@ -213,9 +218,9 @@ class GroundTruthBuilder(object):
         av_mn = float(row['av_mn'])
 
         # Generic class based on av_p value
-        if av_mn < 2.5:
+        if av_mn < 1:
             av_mn_class = 'Low'
-        elif av_mn > 4.5:
+        elif av_mn > 2:
             av_mn_class = 'High'
         else:
             av_mn_class = 'Optimal'
@@ -224,25 +229,36 @@ class GroundTruthBuilder(object):
     @staticmethod
     def build_optimal_macro_nutrients_binary_label(row: Dict):
         av_p = float(row['av_p'])
-        av_k = float(row['av_k'])
-        av_s = float(row['av_s'])
+        oc = float(row['oc'])
 
         # pattern followed: lowest of medium range to highest of optimal range
         # medium 58.2843 - 78.4596, optimum 80.7013 - 112.085
-        av_p_optimal = 58.2843 <= av_p <= 112.085
+        av_p_optimal = 10 <= av_p <= 24.6
         # medium 203.995 - 291.421, optimum 293.663 - 392.298
-        av_k_optimal = 203.995 <= av_k <= 392.298
+        oc_optimal = 0.5 <= oc <= 0.75
 
-        row[GroundTruthBuilder.OPTIMAL_MACRO_NUTRIENTS_CLASS] = av_p_optimal and av_k_optimal and av_s <= 10
+        row[GroundTruthBuilder.OPTIMAL_MACRO_NUTRIENTS_CLASS] = av_p_optimal and oc_optimal
 
     @staticmethod
     def build_optimal_micro_nutrients_binary_label(row: Dict):
-        av_zn = float(row['av_zn'])
-        av_cu = float(row['av_cu'])
+        av_fe = float(row['av_fe'])
         av_mn = float(row['av_mn'])
 
         # pattern followed: lowest of medium range to highest of optimal range
         # medium 3.1 - 4.0, optimum 4.0 - 8.0
-        av_zn_optimal = 3.1 <= av_zn <= 8.0
+        av_fe_optimal = 2.5 <= av_fe <= 4.5
+        av_mn_optimal = 1 <= av_mn <= 2
 
-        row[GroundTruthBuilder.OPTIMAL_MICRO_NUTRIENTS_CLASS] = av_zn_optimal and av_cu >= 1.0 and av_mn >= 40
+        row[GroundTruthBuilder.OPTIMAL_MICRO_NUTRIENTS_CLASS] = av_fe_optimal and av_mn_optimal
+
+    @staticmethod
+    def build_generic_fertility_label(row: Dict):
+        ph = float(row['ph'])
+        ec = float(row['ec'])
+        oc = float(row['oc'])
+        av_p = float(row['av_p'])
+        av_fe = float(row['av_fe'])
+        av_mn = float(row['av_mn'])
+
+        row[GroundTruthBuilder.FERTILITY_CLASS] = (6 <= ph <= 7.3) and ec <= 0.5 and (0.5 <= oc <= 0.75) and \
+                                                  (10 <= av_p <= 24.6) and (2.5 <= av_fe <= 4.5) and (1 <= av_mn <= 2)
