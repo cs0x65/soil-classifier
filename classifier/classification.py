@@ -25,7 +25,8 @@ class SoilClassifier(object):
 
     def classify(self):
         self.data = pandas.read_csv(self.csv_file)
-        MulticlassClassifier(self.data).single_feature_multiclass_classify(features=['ph', 'ec'])
+        MulticlassClassifier(self.data).single_feature_multiclass_classify(features=['ph', 'ec', 'oc', 'av_p', 'av_fe',
+                                                                                     'av_mn'])
         MultilabelClassifier(self.data).single_feature_multilabel_classify(features=['ph'])
 
 
@@ -37,7 +38,7 @@ class MulticlassClassifier(object):
         """
         This method acts on a single feature and applies classification algorithms such that each record in the
         test dataset on prediction belongs to one & only one class from the classes supplied in the training data.
-        :param features: list of features for each of which the classification models are trained and predicted.
+        :param param features: list of features for each of which the classification models are trained and predicted.
         :return:
         """
         print(f'--Start of single feature multi-class classification for: {features}--')
