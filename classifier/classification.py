@@ -17,6 +17,9 @@ from classifier import utils
 from dataset.preparation.ground_truths import GroundTruthBuilder
 
 
+accuracy_dict = dict()
+
+
 class SoilClassifier(object):
     def __init__(self, csv_file):
         self.csv_file = csv_file
@@ -81,7 +84,9 @@ class MulticlassClassifier(object):
 
         print('Predictions: SVC')
         svc_preds = svc.predict(x_test)
-        print(f'SVC accuracy = \n{accuracy_score(svc_preds, y_test)}')
+        acc_score = accuracy_score(svc_preds, y_test)
+        accuracy_dict['svm'] = [acc_score, features, multilabel]
+        print(f'SVC accuracy = \n{acc_score}')
         print(f'SVC confusion matrix = \n{confusion_matrix(svc_preds, y_test)}')
         print(f'SVC classification report = \n{classification_report(svc_preds, y_test)}')
 
@@ -101,7 +106,9 @@ class MulticlassClassifier(object):
 
         print('Predictions: k-NN')
         knn_preds = knn.predict(x_test)
-        print(f'KNN accuracy = \n{accuracy_score(knn_preds, y_test)}')
+        acc_score = accuracy_score(knn_preds, y_test)
+        accuracy_dict['knn'] = [acc_score, features, multilabel]
+        print(f'KNN accuracy = \n{acc_score}')
         print(f'KNN confusion matrix = \n{confusion_matrix(knn_preds, y_test)}')
         print(f'KNN classification report = \n{classification_report(knn_preds, y_test)}')
 
@@ -169,7 +176,9 @@ class MultilabelClassifier(object):
         classifier.fit(x_train, y_train)
         print('Predictions: BinaryRelevance')
         predictions = classifier.predict(x_test)
-        print(f'Multilabel BinaryRelevance accuracy = \n{accuracy_score(predictions, y_test)}')
+        acc_score = accuracy_score(predictions, y_test)
+        accuracy_dict['binary_relevance'] = [acc_score, features]
+        print(f'Multilabel BinaryRelevance accuracy = \n{acc_score}')
         print(f'Multilabel BinaryRelevance classification report = \n{classification_report(predictions, y_test)}')
         # print(f'Multilabel confusion matrix = \n{confusion_matrix(predictions, y_test)}')
 
@@ -192,7 +201,9 @@ class MultilabelClassifier(object):
         classifier.fit(x_train, y_train)
         print('Predictions: ClassifierChain')
         predictions = classifier.predict(x_test)
-        print(f'Multilabel ClassifierChain accuracy = \n{accuracy_score(predictions, y_test)}')
+        acc_score = accuracy_score(predictions, y_test)
+        accuracy_dict['classifier_chain'] = [acc_score, features]
+        print(f'Multilabel ClassifierChain accuracy = \n{acc_score}')
         print(f'Multilabel ClassifierChain classification report = \n{classification_report(predictions, y_test)}')
 
         print(f'--End of Classifier Chain multilabel classification for: {features}--')
@@ -212,7 +223,9 @@ class MultilabelClassifier(object):
         classifier.fit(x_train, y_train)
         print('Predictions: LabelPowerset GNB')
         predictions = classifier.predict(x_test)
-        print(f'Multilabel LabelPowerset GNB accuracy = \n{accuracy_score(predictions, y_test)}')
+        acc_score = accuracy_score(predictions, y_test)
+        accuracy_dict['label_power_set_gnb'] = [acc_score, features]
+        print(f'Multilabel LabelPowerset GNB accuracy = \n{acc_score}')
         print(f'Multilabel LabelPowerset GNB classification report = \n{classification_report(predictions, y_test)}')
 
         print('Training model: LabelPowerset SVM')
@@ -221,7 +234,9 @@ class MultilabelClassifier(object):
         classifier.fit(x_train, y_train)
         print('Predictions: LabelPowerset SVM')
         predictions = classifier.predict(x_test)
-        print(f'Multilabel LabelPowerset SVM accuracy = \n{accuracy_score(predictions, y_test)}')
+        acc_score = accuracy_score(predictions, y_test)
+        accuracy_dict['label_power_set_svm'] = [acc_score, features]
+        print(f'Multilabel LabelPowerset SVM accuracy = \n{acc_score}')
         print(f'Multilabel LabelPowerset SVM classification report = \n{classification_report(predictions, y_test)}')
 
         print(f'--End of Label Power Set multilabel classification for: {features}--')
@@ -243,7 +258,9 @@ class MultilabelClassifier(object):
 
         print('Predictions: MLkNN')
         predictions = classifier.predict(x_test)
-        print(f'Multilabel MLkNN accuracy = \n{accuracy_score(predictions, y_test)}')
+        acc_score = accuracy_score(predictions, y_test)
+        accuracy_dict['multilearn_knn'] = [acc_score, features]
+        print(f'Multilabel MLkNN accuracy = \n{acc_score}')
         print(f'Multilabel MLkNN classification report = \n{classification_report(predictions, y_test)}')
         # print(f'Multilabel MLkNN confusion matrix = \n{confusion_matrix(predictions, y_test)}')
 
