@@ -52,7 +52,7 @@ class MulticlassClassifier(object):
 
         for feature in features:
             self._knn_classify(features=[feature], multilabel=False, plot=True)
-            self._svn_classify(features=[feature], multilabel=False, plot=True)
+            self._svm_classify(features=[feature], multilabel=False, plot=True)
 
         print(f'--End of single feature binary multi-class classification for: {features}--')
 
@@ -66,12 +66,12 @@ class MulticlassClassifier(object):
         print(f'--Start of multiple features multi-class classification for: {features}--')
 
         self._knn_classify(features=features, multilabel=False, plot=True)
-        self._svn_classify(features=features, multilabel=False)
+        self._svm_classify(features=features, multilabel=False)
 
         print(f'--End of single feature binary multi-class classification for: {features}--')
 
-    def _svn_classify(self, features: List, multilabel=False, plot=False):
-        print(f'--Start of SVN classification for: {features} multilabel: {multilabel}--')
+    def _svm_classify(self, features: List, multilabel=False, plot=False):
+        print(f'--Start of SVM classification for: {features} multilabel: {multilabel}--')
         x = utils.get_data_without_labels(self.data)
         x = x[features]
         y = utils.get_applicable_labels(data=self.data, features=features, multilabel=multilabel)
@@ -90,7 +90,7 @@ class MulticlassClassifier(object):
         print(f'SVC confusion matrix = \n{confusion_matrix(svc_preds, y_test)}')
         print(f'SVC classification report = \n{classification_report(svc_preds, y_test)}')
 
-        print(f'--End of SVN classification for: {features} multilabel: {multilabel}--')
+        print(f'--End of SVM classification for: {features} multilabel: {multilabel}--')
 
     def _knn_classify(self, features: List, multilabel=False, plot=False):
         print(f'--Start of k-NN classification for: {features} multilabel: {multilabel}--')
