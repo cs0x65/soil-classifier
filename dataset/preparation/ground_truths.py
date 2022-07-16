@@ -1,8 +1,35 @@
 import csv
-from typing import Dict
+from enum import Enum, unique
+from typing import Dict, List
 import os
 
 import pandas
+
+
+@unique
+class FeatureSet(Enum):
+    PH = 'ph',
+    EC = 'ec',
+    OC = 'oc',
+    P = 'av_p',
+    FE = 'av_fe',
+    MN = 'av_mn',
+    MACRO_NUTRIENTS = 'oc,av_p',
+    MICRO_NUTRIENTS = 'av_fe,av_mn',
+    FERTILITY_SET = 'ph,ec,oc,av_p,av_fe,av_mn',
+    # INVALID = None #
+
+    def __str__(self):
+        # self.value is a tuple except for the last enum value
+        return self.value[0] if isinstance(self.value, tuple) else self.value
+
+    @property
+    def value_as_str(self):
+        return self.__str__()
+
+    @property
+    def value_as_list(self) -> List:
+        return self.value_as_str.split(',') if ',' in self.value_as_str else [self.value_as_str]
 
 
 class GroundTruthBuilder(object):
@@ -26,16 +53,26 @@ class GroundTruthBuilder(object):
     # May need to specify what are the tolerable avg distances from the neighbors for them not to be outliers when using
     # kNN algorithm.
     FEATURES_TO_LABELS_DICT = {
-        'ph': [PH_GENERIC_CLASS, PH_VEG_ROW_CROPS_CLASS, PH_FRUITS_NUTS_CLASS],
-        'ec': [EC_GENERIC_CLASS],
-        'oc': [OC_GENERIC_CLASS],
-        'av_p': [P_GENERIC_CLASS],
-        'av_fe': [FE_GENERIC_CLASS],
-        'av_mn': [MN_GENERIC_CLASS],
-        'oc,av_p': [OPTIMAL_MACRO_NUTRIENTS_CLASS],
-        'av_fe,av_mn': [OPTIMAL_MICRO_NUTRIENTS_CLASS],
-        'ph,ec,oc,av_p,av_fe,av_mn': [FERTILITY_CLASS]
+        FeatureSet.PH.value_as_str: [PH_GENERIC_CLASS, PH_VEG_ROW_CROPS_CLASS, PH_FRUITS_NUTS_CLASS],
+        FeatureSet.EC.value_as_str: [EC_GENERIC_CLASS],
+        FeatureSet.OC.value_as_str: [OC_GENERIC_CLASS],
+        FeatureSet.P.value_as_str: [P_GENERIC_CLASS],
+        FeatureSet.FE.value_as_str: [FE_GENERIC_CLASS],
+        FeatureSet.MN.value_as_str: [MN_GENERIC_CLASS],
+        FeatureSet.MACRO_NUTRIENTS.value_as_str: [OPTIMAL_MACRO_NUTRIENTS_CLASS],
+        FeatureSet.MICRO_NUTRIENTS.value_as_str: [OPTIMAL_MICRO_NUTRIENTS_CLASS],
+        FeatureSet.FERTILITY_SET.value_as_str: [FERTILITY_CLASS]
     }
+
+    BINARY_CLASSIFIABLE_FEATURES = [
+        FeatureSet.MACRO_NUTRIENTS.value_as_str,
+        FeatureSet.MICRO_NUTRIENTS.value_as_str,
+        FeatureSet.FERTILITY_SET.value_as_str
+    ]
+
+    @staticmethod
+    def is_binary_classifiable_feature_set(features: List[str]):
+        return ','.join(features) in GroundTruthBuilder.BINARY_CLASSIFIABLE_FEATURES
 
     def __init__(self, in_csv_file: str, out_csv_file: str = None):
         self.in_csv_file = in_csv_file.strip()

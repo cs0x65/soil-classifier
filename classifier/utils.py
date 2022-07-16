@@ -1,5 +1,8 @@
 from typing import List
 
+from sklearn.metrics import ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
 from dataset.preparation.ground_truths import GroundTruthBuilder
 
 
@@ -22,10 +25,7 @@ def get_applicable_labels(data, features: List[str], multilabel: bool = False):
             # single feature multiple classes
             labels = data[GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][0]]
     else:
-        features_key = ''
-        for f in features:
-            features_key = features_key + ',' + f
-        features_key = features_key.lstrip(',')
+        features_key = ','.join(features)
         labels = GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features_key]
         if multilabel:
             # multiple features multiple labels
@@ -34,3 +34,30 @@ def get_applicable_labels(data, features: List[str], multilabel: bool = False):
             # multiple features multiple classes
             labels = data[labels[0]]
     return labels
+
+
+def render_confusion_matrix(cm, classifier, features: List[str]):
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classifier.classes_)
+    title = str(features) + ':'
+    disp.plot()
+    plt.title(title + ' confusion matrix')
+    plt.xlabel('Predicted labels')
+    plt.ylabel('Actual labels')
+    plt.show()
+
+
+def render_scatter_graph(cm, classifier, features: List[str], x_train, y_train):
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classifier.classes_)
+    title = str(features) + ':'
+    plt.title(title + ' scatter graph')
+    plt.scatter(x_train, y_train)
+    plt.show()
+
+
+def render_avg_neighbor_distance(cm, classifier, features: List[str], x_train):
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classifier.classes_)
+    title = str(features) + ':'
+    distances, indexes = classifier.kneighbors(x_train)
+    plt.plot(distances.mean(axis=1))
+    plt.title(title + ' avg. neighbor distance')
+    plt.show()
