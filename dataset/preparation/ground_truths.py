@@ -16,7 +16,10 @@ class FeatureSet(Enum):
     MN = 'av_mn',
     MACRO_NUTRIENTS = 'oc,av_p',
     MICRO_NUTRIENTS = 'av_fe,av_mn',
-    FERTILITY_SET = 'ph,ec,oc,av_p,av_fe,av_mn',
+    COMPLETE_FERTILITY_SET = 'ph,ec,oc,av_p,av_fe,av_mn',
+    # here we are trying to use the generated label/class values to do the classification -- this is kind of using
+    # aggregated values as features to derive the fertility class
+    PH_MACRO_MICRO_SET = 'oc,av_p,av_fe,av_mn,ph',
     # INVALID = None #
 
     def __str__(self):
@@ -48,7 +51,11 @@ class GroundTruthBuilder(object):
     OPTIMAL_MACRO_NUTRIENTS_CLASS = 'optimal_macro_nutrients_class'
     OPTIMAL_MICRO_NUTRIENTS_CLASS = 'optimal_micro_nutrients_class'
 
-    FERTILITY_CLASS = 'fertility_class'
+    GENERIC_FERTILITY_CLASS = 'generic_fertility_class'
+
+    PH_MACRO_MICRO_ALL_OPTIMAL_CLASS = 'ph_macro_micro_all_optimal_class'
+
+    PH_AND_MACRO_MICRO_EITHER_OPTIMAL_CLASS = 'ph_and_macro_micro_either_optimal_class'
 
     # May need to specify what are the tolerable avg distances from the neighbors for them not to be outliers when using
     # kNN algorithm.
@@ -61,13 +68,16 @@ class GroundTruthBuilder(object):
         FeatureSet.MN.value_as_str: [MN_GENERIC_CLASS],
         FeatureSet.MACRO_NUTRIENTS.value_as_str: [OPTIMAL_MACRO_NUTRIENTS_CLASS],
         FeatureSet.MICRO_NUTRIENTS.value_as_str: [OPTIMAL_MICRO_NUTRIENTS_CLASS],
-        FeatureSet.FERTILITY_SET.value_as_str: [FERTILITY_CLASS]
+        FeatureSet.COMPLETE_FERTILITY_SET.value_as_str: [GENERIC_FERTILITY_CLASS],
+        FeatureSet.PH_MACRO_MICRO_SET.value_as_str: [PH_MACRO_MICRO_ALL_OPTIMAL_CLASS,
+                                                     PH_AND_MACRO_MICRO_EITHER_OPTIMAL_CLASS]
     }
 
     BINARY_CLASSIFIABLE_FEATURES = [
         FeatureSet.MACRO_NUTRIENTS.value_as_str,
         FeatureSet.MICRO_NUTRIENTS.value_as_str,
-        FeatureSet.FERTILITY_SET.value_as_str
+        FeatureSet.COMPLETE_FERTILITY_SET.value_as_str,
+        FeatureSet.PH_MACRO_MICRO_SET.value_as_str
     ]
 
     @staticmethod
@@ -144,6 +154,8 @@ class GroundTruthBuilder(object):
                 self.build_optimal_macro_nutrients_binary_label(row)
                 self.build_optimal_micro_nutrients_binary_label(row)
                 self.build_generic_fertility_label(row)
+                self.build_ph_macro_micro_all_optimal_label(row)
+                self.build_ph_and_macro_micro_either_optimal_label(row)
                 self.dataset_with_gd.append(row)
 
             self.headers.append(GroundTruthBuilder.PH_GENERIC_CLASS)
@@ -156,7 +168,9 @@ class GroundTruthBuilder(object):
             self.headers.append(GroundTruthBuilder.MN_GENERIC_CLASS)
             self.headers.append(GroundTruthBuilder.OPTIMAL_MACRO_NUTRIENTS_CLASS)
             self.headers.append(GroundTruthBuilder.OPTIMAL_MICRO_NUTRIENTS_CLASS)
-            self.headers.append(GroundTruthBuilder.FERTILITY_CLASS)
+            self.headers.append(GroundTruthBuilder.GENERIC_FERTILITY_CLASS)
+            self.headers.append(GroundTruthBuilder.PH_MACRO_MICRO_ALL_OPTIMAL_CLASS)
+            self.headers.append(GroundTruthBuilder.PH_AND_MACRO_MICRO_EITHER_OPTIMAL_CLASS)
 
             self._write_to_csv()
             if os.path.exists(self.cleansed_out_file):
@@ -297,5 +311,57 @@ class GroundTruthBuilder(object):
         av_fe = float(row['av_fe'])
         av_mn = float(row['av_mn'])
 
-        row[GroundTruthBuilder.FERTILITY_CLASS] = (6 <= ph <= 7.3) and ec <= 0.5 and (0.5 <= oc <= 0.75) and \
-                                                  (10 <= av_p <= 24.6) and (2.5 <= av_fe <= 4.5) and (1 <= av_mn <= 2)
+        row[GroundTruthBuilder.GENERIC_FERTILITY_CLASS] = (6 <= ph <= 7.3) and ec <= 0.5 and (0.5 <= oc <= 0.75) and \
+                                                          (10 <= av_p <= 24.6) and (2.5 <= av_fe <= 4.5) and \
+                                                          (1 <= av_mn <= 2)
+
+    @staticmethod
+    def build_ph_macro_micro_all_optimal_label(row: Dict):
+        av_p = float(row['av_p'])
+        oc = float(row['oc'])
+
+        # pattern followed: lowest of medium range to highest of optimal range
+        # medium 58.2843 - 78.4596, optimum 80.7013 - 112.085
+        av_p_optimal = 10 <= av_p <= 24.6
+        # medium 203.995 - 291.421, optimum 293.663 - 392.298
+        oc_optimal = 0.5 <= oc <= 0.75
+
+        av_fe = float(row['av_fe'])
+        av_mn = float(row['av_mn'])
+
+        # pattern followed: lowest of medium range to highest of optimal range
+        # medium 3.1 - 4.0, optimum 4.0 - 8.0
+        av_fe_optimal = 2.5 <= av_fe <= 4.5
+        av_mn_optimal = 1 <= av_mn <= 2
+
+        ph = float(row['ph'])
+        optimal_ph = 6 >= ph <= 7.3
+
+        row[GroundTruthBuilder.PH_MACRO_MICRO_ALL_OPTIMAL_CLASS] = av_p_optimal and oc_optimal and av_fe_optimal and \
+                                                                   av_mn_optimal and optimal_ph
+
+    @staticmethod
+    def build_ph_and_macro_micro_either_optimal_label(row: Dict):
+        av_p = float(row['av_p'])
+        oc = float(row['oc'])
+
+        # pattern followed: lowest of medium range to highest of optimal range
+        # medium 58.2843 - 78.4596, optimum 80.7013 - 112.085
+        av_p_optimal = 10 <= av_p <= 24.6
+        # medium 203.995 - 291.421, optimum 293.663 - 392.298
+        oc_optimal = 0.5 <= oc <= 0.75
+
+        av_fe = float(row['av_fe'])
+        av_mn = float(row['av_mn'])
+
+        # pattern followed: lowest of medium range to highest of optimal range
+        # medium 3.1 - 4.0, optimum 4.0 - 8.0
+        av_fe_optimal = 2.5 <= av_fe <= 4.5
+        av_mn_optimal = 1 <= av_mn <= 2
+
+        ph = float(row['ph'])
+        optimal_ph = 6 >= ph <= 7.3
+
+        row[GroundTruthBuilder.PH_AND_MACRO_MICRO_EITHER_OPTIMAL_CLASS] = (av_p_optimal and oc_optimal) or \
+                                                                          (av_fe_optimal and av_mn_optimal) \
+                                                                          and optimal_ph

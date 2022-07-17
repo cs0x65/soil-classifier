@@ -111,7 +111,7 @@ Label header: ec_class
 Acceptable EC for healthy soil:  normal <= 0.5 dS/m deci-siemens/meter < cause salt injury
 indicates salinity
 normal <= 0.5 <= marginally high <= 1.5 <= excessive(salt injury)
->> TBD
+>> Done
 
 
 Multi label classification:
@@ -147,7 +147,7 @@ Paper: FSA-2118
 optimum <=10
 ------------------------------------------------------------------------------------------------------------------------
 binary classification: optimal_macro_nutrients (True/False)
->>> TBD
+>>> Done
 
 Micro nutrients based classification:
 ===
@@ -173,7 +173,7 @@ low < 1 medium 1-2 high > 2
 
 ------------------------------------------------------------------------------------------------------------------------
 binary classification: optimal_micro_nutrients (True/False)
->>> TBD
+>>> Done
 
 
 Multilabel classification for macro & micronutrients:

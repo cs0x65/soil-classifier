@@ -6,14 +6,30 @@ import matplotlib.pyplot as plt
 from dataset.preparation.ground_truths import GroundTruthBuilder
 
 
-def get_data_without_labels(data):
-    return data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
-                      GroundTruthBuilder.PH_FRUITS_NUTS_CLASS, GroundTruthBuilder.EC_GENERIC_CLASS,
-                      GroundTruthBuilder.P_GENERIC_CLASS, GroundTruthBuilder.OC_GENERIC_CLASS,
-                      GroundTruthBuilder.FE_GENERIC_CLASS, GroundTruthBuilder.MN_GENERIC_CLASS,
-                      GroundTruthBuilder.OPTIMAL_MACRO_NUTRIENTS_CLASS,
-                      GroundTruthBuilder.OPTIMAL_MICRO_NUTRIENTS_CLASS],
-                     axis=1)
+def __get_all_labels() -> List[str]:
+    return [GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
+            GroundTruthBuilder.PH_FRUITS_NUTS_CLASS, GroundTruthBuilder.EC_GENERIC_CLASS,
+            GroundTruthBuilder.P_GENERIC_CLASS, GroundTruthBuilder.OC_GENERIC_CLASS,
+            GroundTruthBuilder.FE_GENERIC_CLASS, GroundTruthBuilder.MN_GENERIC_CLASS,
+            GroundTruthBuilder.OPTIMAL_MACRO_NUTRIENTS_CLASS,
+            GroundTruthBuilder.OPTIMAL_MICRO_NUTRIENTS_CLASS,
+            GroundTruthBuilder.GENERIC_FERTILITY_CLASS,
+            GroundTruthBuilder.PH_MACRO_MICRO_ALL_OPTIMAL_CLASS
+            ]
+
+
+def get_data_without_labels(data, features: List[str] = None):
+    """
+    :param data: the complete data as retrieved by pandas by loading csv file
+    :param features: the set of features which are being used for a classification
+    :return: the data by dropping labels which don't overlap with the given list of features; typically a classifier
+    can use the generated set of labels for the next run/round of classification, and that's when the features can
+    overlap with the labels.
+    """
+    labels_to_drop = __get_all_labels()
+    if features:
+        labels_to_drop = [label for label in labels_to_drop if label not in features]
+    return data.drop(labels_to_drop, axis=1)
 
 
 def get_applicable_labels(data, features: List[str], multilabel: bool = False):
