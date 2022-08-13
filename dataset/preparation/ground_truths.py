@@ -8,22 +8,20 @@ import pandas
 
 @unique
 class FeatureSet(Enum):
-    PH = 'ph',
-    EC = 'ec',
-    OC = 'oc',
-    P = 'av_p',
-    FE = 'av_fe',
-    MN = 'av_mn',
-    MACRO_NUTRIENTS = 'oc,av_p',
-    MICRO_NUTRIENTS = 'av_fe,av_mn',
-    COMPLETE_FERTILITY_SET = 'ph,ec,oc,av_p,av_fe,av_mn',
+    PH = 'ph'
+    EC = 'ec'
+    OC = 'oc'
+    P = 'av_p'
+    FE = 'av_fe'
+    MN = 'av_mn'
+    MACRO_NUTRIENTS = 'oc,av_p'
+    MICRO_NUTRIENTS = 'av_fe,av_mn'
+    COMPLETE_FERTILITY_SET = 'ph,ec,oc,av_p,av_fe,av_mn'
     # here we are trying to use the generated label/class values to do the classification -- this is kind of using
     # aggregated values as features to derive the fertility class
-    PH_MACRO_MICRO_SET = 'oc,av_p,av_fe,av_mn,ph',
-    # INVALID = None #
+    PH_MACRO_MICRO_SET = 'oc,av_p,av_fe,av_mn,ph'
 
     def __str__(self):
-        # self.value is a tuple except for the last enum value
         return self.value[0] if isinstance(self.value, tuple) else self.value
 
     @property
