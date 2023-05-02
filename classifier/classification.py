@@ -54,6 +54,12 @@ class SoilClassifier(object):
 
 
 class MulticlassClassifier(object):
+    """
+    This class implements multi-class classifier i.e.
+    it acts on one or more features supplied to its methods and classifies a given record into ONE & ONLY ONE class.
+    MultiClassClassifier(set of {Fi}) where i >=1 ==> Cj where j in {C1, C2, ...., Cn}
+    Thus output is a scaler value.
+    """
     def __init__(self, data):
         self.data = data
 
@@ -61,7 +67,7 @@ class MulticlassClassifier(object):
         """
         This method acts on a single feature and applies classification algorithms such that each record in the
         test dataset on prediction belongs to one & only one class from the classes supplied in the training data.
-        :param param features: list of features for each of which the classification models are trained and predicted.
+        :param features: list of features, for each of which the classification models are trained and predicted.
         :return:
         """
         print(f'--Start of single feature multi-class classification for: {features}--')
@@ -215,6 +221,13 @@ class MulticlassClassifier(object):
 
 
 class MultilabelClassifier(object):
+    """
+    This class implements multi-label classifier i.e.
+    it acts on one or more features supplied to its methods and classifies a given record into ONE OR MORE
+    classes/labels.
+    MultilabelClassifier(set of {Fi}) where i >=1 ==> {Cj, Cj+1, ..., Cj+m} where j in {C1, C2, ...., Cn} and j<=n
+    Thus the output can be a vector.
+    """
     def __init__(self, data):
         self.data = data
 
