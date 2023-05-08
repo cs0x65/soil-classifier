@@ -2,6 +2,7 @@ from typing import List
 
 from sklearn.metrics import ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from dataset.preparation.ground_truths import GroundTruthBuilder
 
@@ -52,13 +53,46 @@ def get_applicable_labels(data, features: List[str], multilabel: bool = False):
     return labels
 
 
-def render_confusion_matrix(cm, classifier, features: List[str]):
+def get_applicable_labels_without_values(features: List[str], multilabel: bool = False):
+    if len(features) == 1:
+        if multilabel:
+            # single feature multiple labels
+            labels = GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][1:]
+        else:
+            # single feature multiple classes
+            labels = GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][0]
+    else:
+        features_key = ','.join(features)
+        labels = GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features_key]
+        if multilabel:
+            # multiple features multiple labels
+            labels = labels[1:]
+        else:
+            # multiple features multiple classes
+            labels = labels[0]
+    return labels
+
+
+def render_confusion_matrix(cm, classifier, features: List[str], classifier_name: str = ''):
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classifier.classes_)
-    title = str(features) + ':'
+    title = classifier_name + ':' + str(features) + ':'
     disp.plot()
     plt.title(title + ' confusion matrix')
     plt.xlabel('Predicted labels')
     plt.ylabel('Actual labels')
+    plt.show()
+
+
+def render_heat_map(cm, features: List[str], classifier_name: str = ''):
+    ax = plt.subplot()
+    sns.heatmap(cm, annot=True, fmt='g', ax=ax);  # annot=True to annotate cells, ftm='g' to disable scientific notation
+    title = classifier_name + ':' + str(features) + ':'
+    ax.set_title(title + ' confusion matrix/heat map')
+    ax.set_xlabel('Predicted labels')
+    ax.set_ylabel('Actual labels')
+    labels = get_applicable_labels_without_values(features, multilabel=True)
+    ax.xaxis.set_ticklabels(labels)
+    ax.yaxis.set_ticklabels(labels)
     plt.show()
 
 

@@ -4,7 +4,7 @@ import pandas
 from sklearn import model_selection
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, multilabel_confusion_matrix
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC, LinearSVC
@@ -26,7 +26,7 @@ def _update_accuracy_dict(classifier_name: str, features: List[str], binary: boo
     accuracy_dict[features_str] = acc_list
 
 
-class SoilClassifier(object):
+class SoilClassifier:
     def __init__(self, csv_file):
         self.csv_file = csv_file
         # panda dataframe
@@ -46,6 +46,7 @@ class SoilClassifier(object):
         MulticlassClassifier(self.data).multi_feature_multiclass_classify(FeatureSet.COMPLETE_FERTILITY_SET.
                                                                           value_as_list)
 
+        # Currently - pH is the only feature which when taken singly, can be classified into multiple labels
         MultilabelClassifier(self.data).single_feature_multilabel_classify(features=[FeatureSet.PH.value_as_str])
 
         MulticlassClassifier(self.data).multi_feature_multiclass_classify(FeatureSet.PH_MACRO_MICRO_SET.value_as_list)
@@ -53,7 +54,7 @@ class SoilClassifier(object):
         print(f'***\n\naccuracy_dict = {accuracy_dict} \n\n***')
 
 
-class MulticlassClassifier(object):
+class MulticlassClassifier:
     """
     This class implements multi-class classifier i.e.
     it acts on one or more features supplied to its methods and classifies a given record into ONE & ONLY ONE class.
@@ -119,10 +120,12 @@ class MulticlassClassifier(object):
 
         print('Predictions: SVC')
         svc_preds = svc.predict(x_test)
-        acc_score = accuracy_score(svc_preds, y_test)
+        acc_score = accuracy_score(y_test, svc_preds)
         _update_accuracy_dict('svm', features, binary, acc_score)
+        cm = confusion_matrix(y_test, svc_preds)
+        utils.render_confusion_matrix(cm=cm, classifier=svc, features=features,classifier_name='SVM')
         print(f'SVC accuracy = \n{acc_score}')
-        print(f'SVC confusion matrix = \n{confusion_matrix(svc_preds, y_test)}')
+        print(f'SVC confusion matrix = \n{confusion_matrix(y_test, svc_preds)}')
         print(f'SVC classification report = \n{classification_report(svc_preds, y_test)}')
 
         print(f'--End of SVM classification for: {features} binary: {binary}--')
@@ -141,15 +144,17 @@ class MulticlassClassifier(object):
 
         print('Predictions: k-NN')
         knn_preds = knn.predict(x_test)
-        acc_score = accuracy_score(knn_preds, y_test)
+        acc_score = accuracy_score(y_test, knn_preds)
         _update_accuracy_dict('knn', features, binary, acc_score)
+        cm = confusion_matrix(y_test, knn_preds)
+        utils.render_confusion_matrix(cm=cm, classifier=knn, features=features,
+                                      classifier_name='k-NN/KNeighborsClassifier')
+
         print(f'KNN accuracy = \n{acc_score}')
-        print(f'KNN confusion matrix = \n{confusion_matrix(knn_preds, y_test)}')
-        print(f'KNN classification report = \n{classification_report(knn_preds, y_test)}')
+        print(f'KNN confusion matrix = \n{confusion_matrix(y_test, knn_preds)}')
+        print(f'KNN classification report = \n{classification_report(y_test, knn_preds)}')
 
         if plot:
-            cm = confusion_matrix(knn_preds, y_test)
-            utils.render_confusion_matrix(cm=cm, classifier=knn, features=features)
             utils.render_scatter_graph(cm=cm, classifier=knn, features=features, x_train=x_train, y_train=y_train)
             utils.render_avg_neighbor_distance(cm=cm, classifier=knn, features=features, x_train=x_train)
 
@@ -184,12 +189,14 @@ class MulticlassClassifier(object):
         print('Training LogisticRegression finished')
 
         print('Predictions: LogisticRegression')
-        svc_preds = lr.predict(x_test)
-        acc_score = accuracy_score(svc_preds, y_test)
+        lr_preds = lr.predict(x_test)
+        acc_score = accuracy_score(y_test, lr_preds)
         _update_accuracy_dict('logr', features, binary, acc_score)
+        cm = confusion_matrix(y_test, lr_preds)
+        utils.render_confusion_matrix(cm=cm, classifier=lr, features=features, classifier_name='LogisticRegression')
         print(f'LogisticRegression accuracy = \n{acc_score}')
-        print(f'LogisticRegression confusion matrix = \n{confusion_matrix(svc_preds, y_test)}')
-        print(f'LogisticRegression classification report = \n{classification_report(svc_preds, y_test)}')
+        print(f'LogisticRegression confusion matrix = \n{confusion_matrix(y_test, lr_preds)}')
+        print(f'LogisticRegression classification report = \n{classification_report(y_test, lr_preds)}')
 
         print(f'--End of LogisticRegression classification for: {features} binary: {binary}--')
 
@@ -210,17 +217,19 @@ class MulticlassClassifier(object):
         print('Training RandomForest finished')
 
         print('Predictions: RandomForest')
-        svc_preds = rf.predict(x_test)
-        acc_score = accuracy_score(svc_preds, y_test)
+        rf_preds = rf.predict(x_test)
+        acc_score = accuracy_score(y_test, rf_preds)
         _update_accuracy_dict('rf', features, binary, acc_score)
+        cm = confusion_matrix(y_test, rf_preds)
+        utils.render_confusion_matrix(cm=cm, classifier=rf, features=features, classifier_name='RandomForest')
         print(f'RandomForest accuracy = \n{acc_score}')
-        print(f'RandomForest confusion matrix = \n{confusion_matrix(svc_preds, y_test)}')
-        print(f'RandomForest classification report = \n{classification_report(svc_preds, y_test)}')
+        print(f'RandomForest confusion matrix = \n{confusion_matrix(y_test, rf_preds)}')
+        print(f'RandomForest classification report = \n{classification_report(y_test, rf_preds)}')
 
         print(f'--End of RandomForest classification for: {features} binary: {binary}--')
 
 
-class MultilabelClassifier(object):
+class MultilabelClassifier:
     """
     This class implements multi-label classifier i.e.
     it acts on one or more features supplied to its methods and classifies a given record into ONE OR MORE
@@ -244,12 +253,10 @@ class MultilabelClassifier(object):
 
     def _binary_relevance_classify(self, features: List, plot=False):
         print(f'--Start of Binary Relevance multilabel classification for: {features}--')
-        x = self.data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
-                            GroundTruthBuilder.PH_FRUITS_NUTS_CLASS], axis=1)
-        x = x[features]
-        labels = GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][1:]
-        y = self.data[labels]
 
+        x = utils.get_data_without_labels(self.data, features)
+        x = x[features]
+        y = utils.get_applicable_labels(self.data, features, multilabel=True)
         x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
 
         print('Training model: BinaryRelevance')
@@ -260,8 +267,11 @@ class MultilabelClassifier(object):
         predictions = classifier.predict(x_test)
         acc_score = accuracy_score(predictions, y_test)
         _update_accuracy_dict('binary_relevance', features, binary=False, accuracy=acc_score)
+        cm = confusion_matrix(y_test.values.argmax(axis=1), predictions.argmax(axis=1))
+        utils.render_heat_map(cm=cm, features=features, classifier_name='BinaryRelevance-GaussianNB')
+        print(f'Multilabel BinaryRelevance confusion matrix = \n{multilabel_confusion_matrix(y_test, predictions)}')
         print(f'Multilabel BinaryRelevance accuracy = \n{acc_score}')
-        print(f'Multilabel BinaryRelevance classification report = \n{classification_report(predictions, y_test)}')
+        print(f'Multilabel BinaryRelevance classification report = \n{classification_report(y_test, predictions)}')
         # print(f'Multilabel confusion matrix = \n{confusion_matrix(predictions, y_test)}')
 
         print(f'--End of Binary Relevance multilabel classification for: {features}--')
@@ -269,36 +279,32 @@ class MultilabelClassifier(object):
     def _classifier_chain_classify(self, features: List, plot=False):
         print(f'--Start of Classifier Chain multilabel classification for: {features}--')
 
-        x = self.data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
-                            GroundTruthBuilder.PH_FRUITS_NUTS_CLASS], axis=1)
+        x = utils.get_data_without_labels(self.data, features)
         x = x[features]
-        labels = GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][1:]
-        y = self.data[labels]
-
+        y = utils.get_applicable_labels(self.data, features, multilabel=True)
         x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
 
         print('Training model: ClassifierChain')
         classifier = ClassifierChain(GaussianNB())
-        diff = set(y_test) - set(y_train)
         classifier.fit(x_train, y_train)
         print('Predictions: ClassifierChain')
         predictions = classifier.predict(x_test)
-        acc_score = accuracy_score(predictions, y_test)
+        acc_score = accuracy_score(y_test, predictions)
         _update_accuracy_dict('classifier_chain', features, binary=False, accuracy=acc_score)
+        cm = confusion_matrix(y_test.values.argmax(axis=1), predictions.argmax(axis=1))
+        utils.render_heat_map(cm=cm, features=features, classifier_name='ClassifierChain-GaussianNB')
+        print(f'Multilabel ClassifierChain confusion matrix = \n{multilabel_confusion_matrix(y_test, predictions)}')
         print(f'Multilabel ClassifierChain accuracy = \n{acc_score}')
-        print(f'Multilabel ClassifierChain classification report = \n{classification_report(predictions, y_test)}')
+        print(f'Multilabel ClassifierChain classification report = \n{classification_report(y_test, predictions)}')
 
         print(f'--End of Classifier Chain multilabel classification for: {features}--')
 
     def _label_power_set_classify(self, features: List, plot=False):
         print(f'--Start of Label Power Set multilabel classification for: {features}--')
 
-        x = self.data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
-                            GroundTruthBuilder.PH_FRUITS_NUTS_CLASS], axis=1)
+        x = utils.get_data_without_labels(self.data, features)
         x = x[features]
-        labels = GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][1:]
-        y = self.data[labels]
-
+        y = utils.get_applicable_labels(self.data, features, multilabel=True)
         x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
 
         classifier = LabelPowerset(GaussianNB())
@@ -307,8 +313,9 @@ class MultilabelClassifier(object):
         predictions = classifier.predict(x_test)
         acc_score = accuracy_score(predictions, y_test)
         _update_accuracy_dict('label_power_set_gnb', features, binary=False, accuracy=acc_score)
+        print(f'Multilabel LabelPowerset GNB confusion matrix = \n{multilabel_confusion_matrix(y_test, predictions)}')
         print(f'Multilabel LabelPowerset GNB accuracy = \n{acc_score}')
-        print(f'Multilabel LabelPowerset GNB classification report = \n{classification_report(predictions, y_test)}')
+        print(f'Multilabel LabelPowerset GNB classification report = \n{classification_report(y_test, predictions)}')
 
         print('Training model: LabelPowerset SVM')
         # serial vector machine base classifier
@@ -318,20 +325,18 @@ class MultilabelClassifier(object):
         predictions = classifier.predict(x_test)
         acc_score = accuracy_score(predictions, y_test)
         _update_accuracy_dict('label_power_set_svm', features, binary=False, accuracy=acc_score)
+        print(f'Multilabel LabelPowerset SVM confusion matrix = \n{multilabel_confusion_matrix(y_test, predictions)}')
         print(f'Multilabel LabelPowerset SVM accuracy = \n{acc_score}')
-        print(f'Multilabel LabelPowerset SVM classification report = \n{classification_report(predictions, y_test)}')
+        print(f'Multilabel LabelPowerset SVM classification report = \n{classification_report(y_test, predictions)}')
 
         print(f'--End of Label Power Set multilabel classification for: {features}--')
 
     def _multi_learn_knn_classify(self, features: List, plot=False):
         print(f'--Start of Multi-learn kNN multilabel classification for: {features}--')
 
-        x = self.data.drop([GroundTruthBuilder.PH_GENERIC_CLASS, GroundTruthBuilder.PH_VEG_ROW_CROPS_CLASS,
-                            GroundTruthBuilder.PH_FRUITS_NUTS_CLASS], axis=1)
+        x = utils.get_data_without_labels(self.data, features)
         x = x[features]
-        labels = GroundTruthBuilder.FEATURES_TO_LABELS_DICT[features[0]][1:]
-        y = self.data[labels]
-
+        y = utils.get_applicable_labels(self.data, features, multilabel=True)
         x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
 
         print('Training model: MLkNN')
@@ -342,8 +347,8 @@ class MultilabelClassifier(object):
         predictions = classifier.predict(x_test)
         acc_score = accuracy_score(predictions, y_test)
         _update_accuracy_dict('multilearn_knn', features, binary=False, accuracy=acc_score)
+        print(f'Multilabel MLkNN confusion matrix = \n{multilabel_confusion_matrix(y_test, predictions)}')
         print(f'Multilabel MLkNN accuracy = \n{acc_score}')
-        print(f'Multilabel MLkNN classification report = \n{classification_report(predictions, y_test)}')
-        # print(f'Multilabel MLkNN confusion matrix = \n{confusion_matrix(predictions, y_test)}')
+        print(f'Multilabel MLkNN classification report = \n{classification_report(y_test, predictions)}')
 
         print(f'--End of Label Multi-learn kNN multilabel classification for: {features}--')

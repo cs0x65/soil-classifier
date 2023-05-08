@@ -33,7 +33,7 @@ class FeatureSet(Enum):
         return self.value_as_str.split(',') if ',' in self.value_as_str else [self.value_as_str]
 
 
-class GroundTruthBuilder(object):
+class GroundTruthBuilder:
     PH_GENERIC_CLASS = 'ph_class'
     PH_VEG_ROW_CROPS_CLASS = 'ph_veg_and_row_crops'
     PH_FRUITS_NUTS_CLASS = 'ph_fruits_and_nuts'
