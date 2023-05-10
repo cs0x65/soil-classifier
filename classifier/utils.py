@@ -74,40 +74,54 @@ def get_applicable_labels_without_values(features: List[str], multilabel: bool =
 
 
 def render_confusion_matrix(cm, classifier, features: List[str], classifier_name: str = ''):
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classifier.classes_)
-    title = classifier_name + ':' + str(features) + ':'
-    disp.plot()
-    plt.title(title + ' confusion matrix')
-    plt.xlabel('Predicted labels')
-    plt.ylabel('Actual labels')
-    plt.show()
+    try:
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classifier.classes_)
+        title = classifier_name + ':' + str(features) + ':'
+        disp.plot()
+        plt.title(title + ' confusion matrix')
+        plt.xlabel('Predicted labels')
+        plt.ylabel('Actual labels')
+        plt.show()
+    except Exception as e:
+        print(f'Exception:render_confusion_matrix: {str(e)}')
 
 
 def render_heat_map(cm, features: List[str], classifier_name: str = ''):
-    ax = plt.subplot()
-    sns.heatmap(cm, annot=True, fmt='g', ax=ax);  # annot=True to annotate cells, ftm='g' to disable scientific notation
-    title = classifier_name + ':' + str(features) + ':'
-    ax.set_title(title + ' confusion matrix/heat map')
-    ax.set_xlabel('Predicted labels')
-    ax.set_ylabel('Actual labels')
-    labels = get_applicable_labels_without_values(features, multilabel=True)
-    ax.xaxis.set_ticklabels(labels)
-    ax.yaxis.set_ticklabels(labels)
-    plt.show()
+    try:
+        ax = plt.subplot()
+        sns.heatmap(cm, annot=True, fmt='g',
+                    ax=ax);  # annot=True to annotate cells, ftm='g' to disable scientific notation
+        title = classifier_name + ':' + str(features) + ':'
+        ax.set_title(title + ' heat map')
+        ax.set_xlabel('Predicted labels')
+        ax.set_ylabel('Actual labels')
+        labels = get_applicable_labels_without_values(features, multilabel=True)
+        ax.xaxis.set_ticklabels(labels)
+        ax.yaxis.set_ticklabels(labels)
+        plt.show()
+    except Exception as e:
+        print(f'Exception:render_heat_map: {str(e)}')
 
 
 def render_scatter_graph(cm, classifier, features: List[str], x_train, y_train):
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classifier.classes_)
-    title = str(features) + ':'
-    plt.title(title + ' scatter graph')
-    plt.scatter(x_train, y_train)
-    plt.show()
+    try:
+        title = str(features) + ':'
+        plt.title(title + ' scatter graph')
+        if len(x_train.shape) != len(y_train.shape):
+            print('ABORT: render_scatter_graph: len(x_train) != len(y_train)')
+            return
+        plt.scatter(x_train, y_train)
+        plt.show()
+    except Exception as e:
+        print(f'Exception:render_scatter_graph: {str(e)}')
 
 
 def render_avg_neighbor_distance(cm, classifier, features: List[str], x_train):
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classifier.classes_)
-    title = str(features) + ':'
-    distances, indexes = classifier.kneighbors(x_train)
-    plt.plot(distances.mean(axis=1))
-    plt.title(title + ' avg. neighbor distance')
-    plt.show()
+    try:
+        title = str(features) + ':'
+        distances, indexes = classifier.kneighbors(x_train)
+        plt.plot(distances.mean(axis=1))
+        plt.title(title + ' avg. neighbor distance')
+        plt.show()
+    except Exception as e:
+        print(f'Exception:render_avg_neighbor_distance: {str(e)}')

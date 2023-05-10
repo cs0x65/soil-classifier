@@ -35,21 +35,20 @@ class SoilClassifier:
     def classify(self):
         self.data = pandas.read_csv(self.csv_file)
 
-        MulticlassClassifier(self.data).single_feature_multiclass_classify(features=[
+        multiclass_cls = MulticlassClassifier(self.data)
+        multiclass_cls.single_feature_multiclass_classify(features=[
             FeatureSet.PH.value_as_str, FeatureSet.EC.value_as_str, FeatureSet.OC.value_as_str,
             FeatureSet.P.value_as_str,
             FeatureSet.FE.value_as_str, FeatureSet.MN.value_as_str]
         )
 
-        MulticlassClassifier(self.data).multi_feature_multiclass_classify(FeatureSet.MACRO_NUTRIENTS.value_as_list)
-        MulticlassClassifier(self.data).multi_feature_multiclass_classify(FeatureSet.MICRO_NUTRIENTS.value_as_list)
-        MulticlassClassifier(self.data).multi_feature_multiclass_classify(FeatureSet.COMPLETE_FERTILITY_SET.
-                                                                          value_as_list)
+        multiclass_cls.multi_feature_multiclass_classify(FeatureSet.MACRO_NUTRIENTS.value_as_list)
+        multiclass_cls.multi_feature_multiclass_classify(FeatureSet.MICRO_NUTRIENTS.value_as_list)
+        multiclass_cls.multi_feature_multiclass_classify(FeatureSet.COMPLETE_FERTILITY_SET.value_as_list)
+        multiclass_cls.multi_feature_multiclass_classify(FeatureSet.PH_MACRO_MICRO_SET.value_as_list, plot=False)
 
         # Currently - pH is the only feature which when taken singly, can be classified into multiple labels
         MultilabelClassifier(self.data).single_feature_multilabel_classify(features=[FeatureSet.PH.value_as_str])
-
-        MulticlassClassifier(self.data).multi_feature_multiclass_classify(FeatureSet.PH_MACRO_MICRO_SET.value_as_list)
 
         print(f'***\n\naccuracy_dict = {accuracy_dict} \n\n***')
 
@@ -64,7 +63,7 @@ class MulticlassClassifier:
     def __init__(self, data):
         self.data = data
 
-    def single_feature_multiclass_classify(self, features: List):
+    def single_feature_multiclass_classify(self, features: List, plot=True):
         """
         This method acts on a single feature and applies classification algorithms such that each record in the
         test dataset on prediction belongs to one & only one class from the classes supplied in the training data.
@@ -76,13 +75,13 @@ class MulticlassClassifier:
         for feature in features:
             flist = [feature]
             self._knn_classify(features=flist, binary=GroundTruthBuilder.is_binary_classifiable_feature_set(flist),
-                               plot=False)
+                               plot=plot)
             self._svm_classify(features=flist, binary=GroundTruthBuilder.is_binary_classifiable_feature_set(flist),
-                               plot=False)
+                               plot=plot)
 
         print(f'--End of single feature multi-class classification for: {features}--')
 
-    def multi_feature_multiclass_classify(self, features: List):
+    def multi_feature_multiclass_classify(self, features: List, plot=True):
         """
         This method acts on multiple features and applies classification algorithms such that each record in the
         test dataset on prediction belongs to one & only one class from the classes supplied in the training data.
@@ -92,45 +91,17 @@ class MulticlassClassifier:
         print(f'--Start of multiple features multi-class classification for: {features}--')
 
         self._knn_classify(features=features, binary=GroundTruthBuilder.is_binary_classifiable_feature_set(features),
-                           plot=False)
-        self._svm_classify(features=features, binary=GroundTruthBuilder.is_binary_classifiable_feature_set(features))
+                           plot=plot)
+        self._svm_classify(features=features, binary=GroundTruthBuilder.is_binary_classifiable_feature_set(features),
+                           plot=plot)
         self._logistic_regression_classify(features=features, binary=GroundTruthBuilder.
-                                           is_binary_classifiable_feature_set(features))
+                                           is_binary_classifiable_feature_set(features), plot=plot)
         self._random_forest_classify(features=features, binary=GroundTruthBuilder.is_binary_classifiable_feature_set(
-            features))
+            features), plot=plot)
 
         print(f'--End of multiple features multi-class classification for: {features}--')
 
-    def _svm_classify(self, features: List, binary=False, plot=False):
-        print(f'--Start of SVM classification for: {features} binary: {binary}--')
-        x = utils.get_data_without_labels(self.data, features)
-        x = x[features]
-        y = utils.get_applicable_labels(data=self.data, features=features)
-        x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
-
-        print('Training model: SVC')
-        if binary:
-            # find the diff in accuracy vis-a-vis linear and regular SVC
-            print('Training model: binary classification: LinearSVC')
-            svc = LinearSVC()
-        else:
-            svc = SVC(decision_function_shape='ovo')
-        svc.fit(x_train, y_train)
-        print('Training SVC finished')
-
-        print('Predictions: SVC')
-        svc_preds = svc.predict(x_test)
-        acc_score = accuracy_score(y_test, svc_preds)
-        _update_accuracy_dict('svm', features, binary, acc_score)
-        cm = confusion_matrix(y_test, svc_preds)
-        utils.render_confusion_matrix(cm=cm, classifier=svc, features=features,classifier_name='SVM')
-        print(f'SVC accuracy = \n{acc_score}')
-        print(f'SVC confusion matrix = \n{confusion_matrix(y_test, svc_preds)}')
-        print(f'SVC classification report = \n{classification_report(svc_preds, y_test)}')
-
-        print(f'--End of SVM classification for: {features} binary: {binary}--')
-
-    def _knn_classify(self, features: List, binary=False, plot=False):
+    def _knn_classify(self, features: List, binary=False, plot=True):
         print(f'--Start of k-NN classification for: {features} binary: {binary}--')
         x = utils.get_data_without_labels(self.data, features)
         x = x[features]
@@ -147,14 +118,12 @@ class MulticlassClassifier:
         acc_score = accuracy_score(y_test, knn_preds)
         _update_accuracy_dict('knn', features, binary, acc_score)
         cm = confusion_matrix(y_test, knn_preds)
-        utils.render_confusion_matrix(cm=cm, classifier=knn, features=features,
-                                      classifier_name='k-NN/KNeighborsClassifier')
-
         print(f'KNN accuracy = \n{acc_score}')
-        print(f'KNN confusion matrix = \n{confusion_matrix(y_test, knn_preds)}')
+        print(f'KNN confusion matrix = \n{cm}')
         print(f'KNN classification report = \n{classification_report(y_test, knn_preds)}')
 
         if plot:
+            utils.render_confusion_matrix(cm=cm, classifier=knn, features=features, classifier_name='k-NN')
             utils.render_scatter_graph(cm=cm, classifier=knn, features=features, x_train=x_train, y_train=y_train)
             utils.render_avg_neighbor_distance(cm=cm, classifier=knn, features=features, x_train=x_train)
 
@@ -173,7 +142,39 @@ class MulticlassClassifier:
 
         print(f'--End of k-NN classification for: {features} binary: {binary}--')
 
-    def _logistic_regression_classify(self, features: List, binary=False, plot=False):
+    def _svm_classify(self, features: List, binary=False, plot=True):
+        print(f'--Start of SVM classification for: {features} binary: {binary}--')
+        x = utils.get_data_without_labels(self.data, features)
+        x = x[features]
+        y = utils.get_applicable_labels(data=self.data, features=features)
+        x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
+
+        print('Training model: SVC')
+        if binary:
+            # find the diff in accuracy vis-a-vis linear and regular SVC
+            print('Training model: binary classification: LinearSVC')
+            svc = LinearSVC()
+            algorithm = 'linear-svm'
+        else:
+            svc = SVC(decision_function_shape='ovo')
+            algorithm = 'svm-ovo'
+        svc.fit(x_train, y_train)
+        print('Training SVC finished')
+
+        print('Predictions: SVC')
+        svc_preds = svc.predict(x_test)
+        acc_score = accuracy_score(y_test, svc_preds)
+        _update_accuracy_dict(algorithm, features, binary, acc_score)
+        cm = confusion_matrix(y_test, svc_preds)
+        if plot:
+            utils.render_confusion_matrix(cm=cm, classifier=svc, features=features, classifier_name='SVM')
+        print(f'SVC accuracy = \n{acc_score}')
+        print(f'SVC confusion matrix = \n{cm}')
+        print(f'SVC classification report = \n{classification_report(y_test, svc_preds)}')
+
+        print(f'--End of SVM classification for: {features} binary: {binary}--')
+
+    def _logistic_regression_classify(self, features: List, binary=False, plot=True):
         print(f'--Start of LogisticRegression classification for: {features} binary: {binary}--')
         x = utils.get_data_without_labels(self.data, features)
         x = x[features]
@@ -183,24 +184,27 @@ class MulticlassClassifier:
         print('Training model: LogisticRegression')
         if binary:
             lr = LogisticRegression(random_state=0, multi_class='ovr')
+            algorithm = 'logr-ovr'
         else:
             lr = LogisticRegression(random_state=0, multi_class='multinomial')
+            algorithm = 'logr-multinomial'
         lr.fit(x_train, y_train)
         print('Training LogisticRegression finished')
 
         print('Predictions: LogisticRegression')
         lr_preds = lr.predict(x_test)
         acc_score = accuracy_score(y_test, lr_preds)
-        _update_accuracy_dict('logr', features, binary, acc_score)
+        _update_accuracy_dict(algorithm, features, binary, acc_score)
         cm = confusion_matrix(y_test, lr_preds)
-        utils.render_confusion_matrix(cm=cm, classifier=lr, features=features, classifier_name='LogisticRegression')
+        if plot:
+            utils.render_confusion_matrix(cm=cm, classifier=lr, features=features, classifier_name='LogisticRegression')
         print(f'LogisticRegression accuracy = \n{acc_score}')
-        print(f'LogisticRegression confusion matrix = \n{confusion_matrix(y_test, lr_preds)}')
+        print(f'LogisticRegression confusion matrix = \n{cm}')
         print(f'LogisticRegression classification report = \n{classification_report(y_test, lr_preds)}')
 
         print(f'--End of LogisticRegression classification for: {features} binary: {binary}--')
 
-    def _random_forest_classify(self, features: List, binary=False, plot=False):
+    def _random_forest_classify(self, features: List, binary=False, plot=True):
         print(f'--Start of RandomForest classification for: {features} binary: {binary}--')
         x = utils.get_data_without_labels(self.data, features)
         x = x[features]
@@ -221,9 +225,10 @@ class MulticlassClassifier:
         acc_score = accuracy_score(y_test, rf_preds)
         _update_accuracy_dict('rf', features, binary, acc_score)
         cm = confusion_matrix(y_test, rf_preds)
-        utils.render_confusion_matrix(cm=cm, classifier=rf, features=features, classifier_name='RandomForest')
+        if plot:
+            utils.render_confusion_matrix(cm=cm, classifier=rf, features=features, classifier_name='RandomForest')
         print(f'RandomForest accuracy = \n{acc_score}')
-        print(f'RandomForest confusion matrix = \n{confusion_matrix(y_test, rf_preds)}')
+        print(f'RandomForest confusion matrix = \n{cm}')
         print(f'RandomForest classification report = \n{classification_report(y_test, rf_preds)}')
 
         print(f'--End of RandomForest classification for: {features} binary: {binary}--')
@@ -244,14 +249,14 @@ class MultilabelClassifier:
         print(f'--Start of single feature multi-label classification for: {features}--')
 
         for feature in features:
-            self._binary_relevance_classify(features=[feature], plot=False)
-            self._classifier_chain_classify(features=[feature], plot=False)
-            self._label_power_set_classify(features=[feature], plot=False)
-            self._multi_learn_knn_classify(features=[feature], plot=False)
+            self._binary_relevance_classify(features=[feature])
+            self._classifier_chain_classify(features=[feature])
+            self._label_power_set_classify(features=[feature])
+            self._multi_learn_knn_classify(features=[feature])
 
         print(f'--End of single feature multi-label classification for: {features}--')
 
-    def _binary_relevance_classify(self, features: List, plot=False):
+    def _binary_relevance_classify(self, features: List):
         print(f'--Start of Binary Relevance multilabel classification for: {features}--')
 
         x = utils.get_data_without_labels(self.data, features)
@@ -265,18 +270,17 @@ class MultilabelClassifier:
         classifier.fit(x_train, y_train)
         print('Predictions: BinaryRelevance')
         predictions = classifier.predict(x_test)
-        acc_score = accuracy_score(predictions, y_test)
+        acc_score = accuracy_score(y_test, predictions)
         _update_accuracy_dict('binary_relevance', features, binary=False, accuracy=acc_score)
         cm = confusion_matrix(y_test.values.argmax(axis=1), predictions.argmax(axis=1))
         utils.render_heat_map(cm=cm, features=features, classifier_name='BinaryRelevance-GaussianNB')
         print(f'Multilabel BinaryRelevance confusion matrix = \n{multilabel_confusion_matrix(y_test, predictions)}')
         print(f'Multilabel BinaryRelevance accuracy = \n{acc_score}')
         print(f'Multilabel BinaryRelevance classification report = \n{classification_report(y_test, predictions)}')
-        # print(f'Multilabel confusion matrix = \n{confusion_matrix(predictions, y_test)}')
 
         print(f'--End of Binary Relevance multilabel classification for: {features}--')
 
-    def _classifier_chain_classify(self, features: List, plot=False):
+    def _classifier_chain_classify(self, features: List):
         print(f'--Start of Classifier Chain multilabel classification for: {features}--')
 
         x = utils.get_data_without_labels(self.data, features)
@@ -299,7 +303,7 @@ class MultilabelClassifier:
 
         print(f'--End of Classifier Chain multilabel classification for: {features}--')
 
-    def _label_power_set_classify(self, features: List, plot=False):
+    def _label_power_set_classify(self, features: List):
         print(f'--Start of Label Power Set multilabel classification for: {features}--')
 
         x = utils.get_data_without_labels(self.data, features)
@@ -307,11 +311,12 @@ class MultilabelClassifier:
         y = utils.get_applicable_labels(self.data, features, multilabel=True)
         x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.30, random_state=31)
 
+        # Gaussian Naive-Bayes as a base classifier
         classifier = LabelPowerset(GaussianNB())
         classifier.fit(x_train, y_train)
         print('Predictions: LabelPowerset GNB')
         predictions = classifier.predict(x_test)
-        acc_score = accuracy_score(predictions, y_test)
+        acc_score = accuracy_score(y_test, predictions)
         _update_accuracy_dict('label_power_set_gnb', features, binary=False, accuracy=acc_score)
         print(f'Multilabel LabelPowerset GNB confusion matrix = \n{multilabel_confusion_matrix(y_test, predictions)}')
         print(f'Multilabel LabelPowerset GNB accuracy = \n{acc_score}')
@@ -323,7 +328,7 @@ class MultilabelClassifier:
         classifier.fit(x_train, y_train)
         print('Predictions: LabelPowerset SVM')
         predictions = classifier.predict(x_test)
-        acc_score = accuracy_score(predictions, y_test)
+        acc_score = accuracy_score(y_test, predictions)
         _update_accuracy_dict('label_power_set_svm', features, binary=False, accuracy=acc_score)
         print(f'Multilabel LabelPowerset SVM confusion matrix = \n{multilabel_confusion_matrix(y_test, predictions)}')
         print(f'Multilabel LabelPowerset SVM accuracy = \n{acc_score}')
@@ -331,7 +336,7 @@ class MultilabelClassifier:
 
         print(f'--End of Label Power Set multilabel classification for: {features}--')
 
-    def _multi_learn_knn_classify(self, features: List, plot=False):
+    def _multi_learn_knn_classify(self, features: List):
         print(f'--Start of Multi-learn kNN multilabel classification for: {features}--')
 
         x = utils.get_data_without_labels(self.data, features)
@@ -345,7 +350,7 @@ class MultilabelClassifier:
 
         print('Predictions: MLkNN')
         predictions = classifier.predict(x_test)
-        acc_score = accuracy_score(predictions, y_test)
+        acc_score = accuracy_score(y_test, predictions)
         _update_accuracy_dict('multilearn_knn', features, binary=False, accuracy=acc_score)
         print(f'Multilabel MLkNN confusion matrix = \n{multilabel_confusion_matrix(y_test, predictions)}')
         print(f'Multilabel MLkNN accuracy = \n{acc_score}')
