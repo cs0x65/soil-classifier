@@ -68,6 +68,8 @@ class MulticlassClassifier:
         This method acts on a single feature and applies classification algorithms such that each record in the
         test dataset on prediction belongs to one & only one class from the classes supplied in the training data.
         :param features: list of features, for each of which the classification models are trained and predicted.
+        :param plot: if True plots the metrics such as confusion matrix, scatter graph, avg. neighbor distance etc. for
+        a given classification algorithm.
         :return:
         """
         print(f'--Start of single feature multi-class classification for: {features}--')
@@ -86,6 +88,8 @@ class MulticlassClassifier:
         This method acts on multiple features and applies classification algorithms such that each record in the
         test dataset on prediction belongs to one & only one class from the classes supplied in the training data.
         :param features: list of features together for which the classification models are trained and predicted.
+        :param plot: if True plots the metrics such as confusion matrix, scatter graph, avg. neighbor distance etc. for
+        a given classification algorithm.
         :return:
         """
         print(f'--Start of multiple features multi-class classification for: {features}--')
