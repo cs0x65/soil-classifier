@@ -108,8 +108,7 @@ def render_scatter_graph(cm, classifier, features: List[str], x_train, y_train):
         title = str(features) + ':'
         plt.title(title + ' scatter graph')
         if len(x_train.shape) != len(y_train.shape):
-            print('ABORT: render_scatter_graph: len(x_train) != len(y_train)')
-            return
+            print('WARNING: render_scatter_graph: len(x_train) != len(y_train)')
         plt.scatter(x_train, y_train)
         plt.show()
     except Exception as e:

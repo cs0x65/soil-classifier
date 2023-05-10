@@ -1,0 +1,154 @@
+{
+  "ph": [
+    {
+      "knn": 1,
+      "binary": false
+    },
+    {
+      "svm-ovo": 1,
+      "binary": false
+    },
+    {
+      "binary_relevance": 0.8790979927465977,
+      "binary": false
+    },
+    {
+      "classifier_chain": 0.8790979927465977,
+      "binary": false
+    },
+    {
+      "label_power_set_gnb": 0.9536069517756472,
+      "binary": false
+    },
+    {
+      "label_power_set_svm": 1,
+      "binary": false
+    },
+    {
+      "multilearn_knn": 1,
+      "binary": false
+    }
+  ],
+  "ec": [
+    {
+      "knn": 1,
+      "binary": false
+    },
+    {
+      "svm-ovo": 0.9970555495709003,
+      "binary": false
+    }
+  ],
+  "oc": [
+    {
+      "knn": 1,
+      "binary": false
+    },
+    {
+      "svm-ovo": 1,
+      "binary": false
+    }
+  ],
+  "av_p": [
+    {
+      "knn": 1,
+      "binary": false
+    },
+    {
+      "svm-ovo": 1,
+      "binary": false
+    }
+  ],
+  "av_fe": [
+    {
+      "knn": 1,
+      "binary": false
+    },
+    {
+      "svm-ovo": 0.9985636827175123,
+      "binary": false
+    }
+  ],
+  "av_mn": [
+    {
+      "knn": 1,
+      "binary": false
+    },
+    {
+      "svm-ovo": 0.9974146288915221,
+      "binary": false
+    }
+  ],
+  "oc,av_p": [
+    {
+      "knn": 0.9974146288915221,
+      "binary": true
+    },
+    {
+      "linear-svm": 0.9269991741175626,
+      "binary": true
+    },
+    {
+      "logr-ovr": 0.9321699163345183,
+      "binary": true
+    },
+    {
+      "rf": 1,
+      "binary": true
+    }
+  ],
+  "av_fe,av_mn": [
+    {
+      "knn": 0.9994613810190671,
+      "binary": true
+    },
+    {
+      "linear-svm": 0.9905562138676434,
+      "binary": true
+    },
+    {
+      "logr-ovr": 0.9898739631584617,
+      "binary": true
+    },
+    {
+      "rf": 1,
+      "binary": true
+    }
+  ],
+  "ph,ec,oc,av_p,av_fe,av_mn": [
+    {
+      "knn": 0.9999281841358756,
+      "binary": true
+    },
+    {
+      "linear-svm": 0.9999281841358756,
+      "binary": true
+    },
+    {
+      "logr-ovr": 0.9999281841358756,
+      "binary": true
+    },
+    {
+      "rf": 0.9999281841358756,
+      "binary": true
+    }
+  ],
+  "oc,av_p,av_fe,av_mn,ph": [
+    {
+      "knn": 1,
+      "binary": true
+    },
+    {
+      "linear-svm": 1,
+      "binary": true
+    },
+    {
+      "logr-ovr": 1,
+      "binary": true
+    },
+    {
+      "rf": 1,
+      "binary": true
+    }
+  ]
+}
