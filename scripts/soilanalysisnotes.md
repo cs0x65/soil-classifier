@@ -194,9 +194,14 @@ Multiple classes/labels in earlier classification becomes features and binary cl
 - Becomes binary classification with class: generic_fertile (True/False)
 >> TBD
 
-Multiple crop specific lebels/classes in earlier classification becomes features and do multilabel classification:
+Multiple crop specific labels/classes in earlier classification becomes features and do multilabel classification:
 --
 - Take all the labels generated from single feature or multi-feature to multilabel classification
 - For next level of classification, all these labels become features
 - Multilabel classification with labels: fertile_row_crops_forages_veg, fertile_fruit_nuts
 >> TBD
+
+Implementation aspects:
+===
+#### Pass num neighbors as a keyword arg to prevent the multi-learn MLkNN crash:
+`self.knn_ = NearestNeighbors(self.k).fit(X) > self.knn_ = NearestNeighbors(n_neighbors=self.k).fit(X)`
