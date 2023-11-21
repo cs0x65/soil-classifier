@@ -205,3 +205,5 @@ Implementation aspects:
 ===
 #### Pass num neighbors as a keyword arg to prevent the multi-learn MLkNN crash:
 `self.knn_ = NearestNeighbors(self.k).fit(X) > self.knn_ = NearestNeighbors(n_neighbors=self.k).fit(X)`
+https://github.com/scikit-multilearn/scikit-multilearn/issues/230
+https://github.com/scikit-multilearn/scikit-multilearn/pull/231
